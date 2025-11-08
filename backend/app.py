@@ -6,14 +6,25 @@ from datetime import datetime
 import os
 
 app = Flask(__name__)
+
+# Configuration from environment variables
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///finance_tracker.db'
+
+# Database configuration - support both PostgreSQL and SQLite
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///finance_tracker.db')
+# Handle Render's postgres:// URL format (SQLAlchemy needs postgresql://)
+if database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-# Enable CORS for all routes
-CORS(app, supports_credentials=True, origins=['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001'])
+# CORS configuration - allow multiple origins from environment variable
+cors_origins = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001')
+cors_origins_list = [origin.strip() for origin in cors_origins.split(',')]
+CORS(app, supports_credentials=True, origins=cors_origins_list)
 
 db = SQLAlchemy(app)
 
@@ -315,5 +326,7 @@ def health():
     return jsonify({'status': 'ok'}), 200
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    port = int(os.environ.get('PORT', 5001))
+    debug = os.environ.get('FLASK_ENV') != 'production'
+    app.run(debug=debug, host='0.0.0.0', port=port)
 
