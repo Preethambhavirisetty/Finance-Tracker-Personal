@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { PlusCircle, Trash2, User, LogOut, TrendingUp, TrendingDown, Wallet, PieChart, DollarSign, Calendar, Lock, Mail, LogIn } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
@@ -34,11 +34,7 @@ const FinanceTracker = () => {
   });
 
   // Check authentication on mount
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/check-auth`, {
         credentials: 'include'
@@ -54,7 +50,11 @@ const FinanceTracker = () => {
     } finally {
       setAuthLoading(false);
     }
-  };
+  }, [API_URL, loadProfiles, setIsAuthenticated, setCurrentUser]);
+  
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
