@@ -320,6 +320,19 @@ def delete_transaction(transaction_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+# Root endpoint
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify({
+        'message': 'Finance Tracker API',
+        'status': 'running',
+        'version': '1.0.0',
+        'endpoints': {
+            'health': '/api/health',
+            'api_base': '/api'
+        }
+    }), 200
+
 # Health check endpoint
 @app.route('/api/health', methods=['GET'])
 def health():
