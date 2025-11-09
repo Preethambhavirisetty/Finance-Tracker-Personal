@@ -22,7 +22,7 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # CORS configuration - allow multiple origins from environment variable
-cors_origins = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001')
+cors_origins = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,https://finance-tracker-personal-d9ec.vercel.app')
 cors_origins_list = [origin.strip() for origin in cors_origins.split(',')]
 CORS(app, supports_credentials=True, origins=cors_origins_list)
 
