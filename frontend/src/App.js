@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { PlusCircle, Trash2, User, LogOut, TrendingUp, TrendingDown, Wallet, PieChart, DollarSign, Calendar, Lock, Mail, LogIn } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
@@ -7,7 +7,7 @@ const FinanceTracker = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [showLogin, setShowLogin] = useState(true);
-  const [authLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
   
   // Auth form states
   const [authForm, setAuthForm] = useState({
@@ -33,28 +33,41 @@ const FinanceTracker = () => {
     date: new Date().toISOString().split('T')[0]
   });
 
+  const loadProfiles = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_URL}/profiles`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      setProfiles(data);
+      setShowProfileSelect(true);
+    } catch (error) {
+      console.error('Failed to load profiles:', error);
+    }
+  }, [setProfiles, setShowProfileSelect]);
+
   // Check authentication on mount
-  // const checkAuth = useCallback(async () => {
-  //   try {
-  //     const response = await fetch(`${API_URL}/check-auth`, {
-  //       credentials: 'include'
-  //     });
-  //     const data = await response.json();
-  //     if (data.authenticated) {
-  //       setIsAuthenticated(true);
-  //       setCurrentUser(data.user);
-  //       loadProfiles();
-  //     }
-  //   } catch (error) {
-  //     console.error('Auth check failed:', error);
-  //   } finally {
-  //     setAuthLoading(false);
-  //   }
-  // }, [API_URL, loadProfiles, setIsAuthenticated, setCurrentUser]);
+  const checkAuth = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_URL}/check-auth`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      if (data.authenticated) {
+        setIsAuthenticated(true);
+        setCurrentUser(data.user);
+        loadProfiles();
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+    } finally {
+      setAuthLoading(false);
+    }
+  }, [loadProfiles, setIsAuthenticated, setCurrentUser]);
   
-  // useEffect(() => {
-  //   checkAuth();
-  // }, [checkAuth]);
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -125,19 +138,6 @@ const FinanceTracker = () => {
       setAuthForm({ username: '', email: '', password: '' });
     } catch (error) {
       console.error('Logout failed:', error);
-    }
-  };
-
-  const loadProfiles = async () => {
-    try {
-      const response = await fetch(`${API_URL}/profiles`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
-      setProfiles(data);
-      setShowProfileSelect(true);
-    } catch (error) {
-      console.error('Failed to load profiles:', error);
     }
   };
 
@@ -462,6 +462,7 @@ const FinanceTracker = () => {
 
   // Main Dashboard
   return (
+    <div>
     <div className="min-h-screen bg-white p-4 md:p-8" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -706,6 +707,7 @@ const FinanceTracker = () => {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 };
