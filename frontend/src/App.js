@@ -34,27 +34,27 @@ const FinanceTracker = () => {
   });
 
   // Check authentication on mount
-  const checkAuth = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_URL}/check-auth`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
-      if (data.authenticated) {
-        setIsAuthenticated(true);
-        setCurrentUser(data.user);
-        loadProfiles();
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-    } finally {
-      setAuthLoading(false);
-    }
-  }, [API_URL, loadProfiles, setIsAuthenticated, setCurrentUser]);
+  // const checkAuth = useCallback(async () => {
+  //   try {
+  //     const response = await fetch(`${API_URL}/check-auth`, {
+  //       credentials: 'include'
+  //     });
+  //     const data = await response.json();
+  //     if (data.authenticated) {
+  //       setIsAuthenticated(true);
+  //       setCurrentUser(data.user);
+  //       loadProfiles();
+  //     }
+  //   } catch (error) {
+  //     console.error('Auth check failed:', error);
+  //   } finally {
+  //     setAuthLoading(false);
+  //   }
+  // }, [API_URL, loadProfiles, setIsAuthenticated, setCurrentUser]);
   
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+  // useEffect(() => {
+  //   checkAuth();
+  // }, [checkAuth]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
