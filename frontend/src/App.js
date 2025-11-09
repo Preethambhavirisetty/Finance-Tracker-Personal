@@ -7,7 +7,7 @@ const FinanceTracker = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [showLogin, setShowLogin] = useState(true);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [authLoading] = useState(true);
   
   // Auth form states
   const [authForm, setAuthForm] = useState({
