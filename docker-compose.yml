@@ -25,9 +25,7 @@ services:
 
   # Backend API
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    build: ./backend
     container_name: finance-tracker-backend
     restart: unless-stopped
     environment:
@@ -61,9 +59,8 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
       args:
-        REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:5001}
+        - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:5001}
     container_name: finance-tracker-frontend
     restart: unless-stopped
     ports:
