@@ -47,13 +47,19 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 # Session configuration
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_SECURE'] = os.environ.get('FLASK_ENV') == 'production'
+# Only use secure cookies if explicitly enabled (requires HTTPS)
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() == 'true'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
 # CORS configuration - allow multiple origins from environment variable
 cors_origins = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,https://finance-tracker-personal-d9ec.vercel.app')
 cors_origins_list = [origin.strip() for origin in cors_origins.split(',')]
-CORS(app, supports_credentials=True, origins=cors_origins_list)
+CORS(app, 
+     supports_credentials=True, 
+     origins=cors_origins_list,
+     allow_headers=['Content-Type', 'Authorization'],
+     expose_headers=['Content-Type'],
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
 db = SQLAlchemy(app)
 
