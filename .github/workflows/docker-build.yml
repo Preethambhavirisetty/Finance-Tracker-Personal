@@ -1,0 +1,60 @@
+# Optional: GitHub Actions workflow for building and testing Docker images
+name: Docker Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Build Backend Image
+      run: |
+        cd backend
+        docker build -t finance-tracker-backend:test .
+    
+    - name: Build Frontend Image
+      run: |
+        cd frontend
+        docker build -t finance-tracker-frontend:test \
+          --build-arg REACT_APP_API_URL=http://localhost:5001 .
+    
+    - name: Test Backend Container
+      run: |
+        docker run -d --name backend-test \
+          -e SECRET_KEY=test-key \
+          -e DATABASE_URL=sqlite:///test.db \
+          -p 5001:5001 \
+          finance-tracker-backend:test
+        sleep 10
+        curl -f http://localhost:5001/api/health || exit 1
+        docker stop backend-test
+    
+    - name: Test Frontend Container
+      run: |
+        docker run -d --name frontend-test \
+          -p 8080:80 \
+          finance-tracker-frontend:test
+        sleep 5
+        curl -f http://localhost:8080/health || exit 1
+        docker stop frontend-test
+    
+    - name: Run docker-compose
+      run: |
+        cp env.example .env
+        docker-compose up -d
+        sleep 30
+        docker-compose ps
+        curl -f http://localhost:5001/api/health || exit 1
+        curl -f http://localhost/health || exit 1
+        docker-compose down

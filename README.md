@@ -2,6 +2,28 @@
 
 A beautiful finance tracking application with user authentication, multiple profiles, and elegant design. Built with React frontend and Python Flask backend.
 
+## 🐳 Docker Deployment (NEW!)
+
+Deploy the entire application on AWS EC2 or any server with persistent storage using Docker!
+
+**Quick Start:**
+```bash
+./deploy-ec2.sh
+```
+
+**Or manually:**
+```bash
+cp env.example .env
+# Edit .env with your configuration
+docker-compose up -d
+```
+
+📖 **Full Documentation:**
+- [Docker Quick Start Guide](DOCKER-QUICKSTART.md)
+- [Complete EC2 Deployment Guide](DEPLOYMENT.md)
+
+---
+
 ## Features
 
 ### Authentication

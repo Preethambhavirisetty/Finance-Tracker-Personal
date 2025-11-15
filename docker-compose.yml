@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: finance-tracker-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-finance_tracker}
+      POSTGRES_USER: ${POSTGRES_USER:-financeuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-financeuser} -d ${POSTGRES_DB:-finance_tracker}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - finance-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: finance-tracker-backend
+    restart: unless-stopped
+    environment:
+      # Database configuration
+      DATABASE_URL: postgresql://${POSTGRES_USER:-financeuser}:${POSTGRES_PASSWORD:-changeme}@db:5432/${POSTGRES_DB:-finance_tracker}
+      
+      # Flask configuration
+      SECRET_KEY: ${SECRET_KEY:-change-this-secret-key-in-production}
+      FLASK_ENV: production
+      PORT: 5001
+      
+      # CORS configuration
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost}
+    ports:
+      - "5001:5001"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5001/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - finance-network
+    volumes:
+      - backend_logs:/app/logs
+
+  # Frontend (React + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: finance-tracker-frontend
+    restart: unless-stopped
+    environment:
+      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:5001}
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - finance-network
+
+  # Backup service (optional - for automated database backups)
+  backup:
+    image: postgres:15-alpine
+    container_name: finance-tracker-backup
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-finance_tracker}
+      POSTGRES_USER: ${POSTGRES_USER:-financeuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-7}
+    volumes:
+      - ./backups:/backups
+      - ./backup-script.sh:/backup-script.sh:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - finance-network
+    entrypoint: /bin/sh
+    command: |
+      -c "
+      echo 'Backup service started. Will backup database daily at 2 AM';
+      while true; do
+        sleep 86400;
+        TIMESTAMP=$$(date +%Y%m%d_%H%M%S);
+        echo \"Starting backup at $$TIMESTAMP\";
+        PGPASSWORD=\"${POSTGRES_PASSWORD:-changeme}\" pg_dump -h db -U ${POSTGRES_USER:-financeuser} -d ${POSTGRES_DB:-finance_tracker} > /backups/backup_$$TIMESTAMP.sql;
+        echo \"Backup completed: backup_$$TIMESTAMP.sql\";
+        find /backups -name 'backup_*.sql' -type f -mtime +${BACKUP_KEEP_DAYS:-7} -delete;
+        echo \"Old backups cleaned up\";
+      done
+      "
+
+# Named volumes for persistent storage
+volumes:
+  postgres_data:
+    driver: local
+  backend_logs:
+    driver: local
+
+# Custom network
+networks:
+  finance-network:
+    driver: bridge
+
