@@ -1,8 +1,13 @@
 .PHONY: help build up down restart logs status clean backup restore update
 
+# Detect Docker Compose version
+DOCKER_COMPOSE := $(shell docker compose version > /dev/null 2>&1 && echo "docker compose" || echo "docker-compose")
+
 # Default target
 help:
 	@echo "Finance Tracker - Docker Management Commands"
+	@echo ""
+	@echo "Detected: $(DOCKER_COMPOSE)"
 	@echo ""
 	@echo "Usage:"
 	@echo "  make build          Build all Docker images"
@@ -26,48 +31,48 @@ help:
 
 # Build all images
 build:
-	docker-compose build
+	$(DOCKER_COMPOSE) build
 
 # Start all services
 up:
-	docker-compose up -d
+	$(DOCKER_COMPOSE) up -d
 	@echo "Services started! Frontend: http://localhost | Backend: http://localhost:5001"
 
 # Stop and remove containers
 down:
-	docker-compose down
+	$(DOCKER_COMPOSE) down
 
 # Restart all services
 restart:
-	docker-compose restart
+	$(DOCKER_COMPOSE) restart
 	@echo "Services restarted!"
 
 # View logs from all services
 logs:
-	docker-compose logs -f
+	$(DOCKER_COMPOSE) logs -f
 
 # View logs from backend
 logs-backend:
-	docker-compose logs -f backend
+	$(DOCKER_COMPOSE) logs -f backend
 
 # View logs from frontend
 logs-frontend:
-	docker-compose logs -f frontend
+	$(DOCKER_COMPOSE) logs -f frontend
 
 # View logs from database
 logs-db:
-	docker-compose logs -f db
+	$(DOCKER_COMPOSE) logs -f db
 
 # Show status of all services
 status:
-	docker-compose ps
+	$(DOCKER_COMPOSE) ps
 
 # Clean up everything (⚠️ DELETES DATA)
 clean:
 	@echo "⚠️  WARNING: This will delete all data including database!"
 	@read -p "Are you sure? Type 'yes' to continue: " confirm; \
 	if [ "$$confirm" = "yes" ]; then \
-		docker-compose down -v; \
+		$(DOCKER_COMPOSE) down -v; \
 		echo "Cleanup complete."; \
 	else \
 		echo "Cancelled."; \
@@ -77,28 +82,28 @@ clean:
 backup:
 	@mkdir -p backups
 	@TIMESTAMP=$$(date +%Y%m%d_%H%M%S); \
-	docker-compose exec -T db pg_dump -U financeuser finance_tracker > backups/manual_backup_$$TIMESTAMP.sql; \
+	$(DOCKER_COMPOSE) exec -T db pg_dump -U financeuser finance_tracker > backups/manual_backup_$$TIMESTAMP.sql; \
 	echo "Backup created: backups/manual_backup_$$TIMESTAMP.sql"
 
 # Restore from latest backup
 restore:
-	@LATEST=$$(ls -t backups/*.sql | head -1); \
+	@LATEST=$$(ls -t backups/*.sql 2>/dev/null | head -1); \
 	if [ -z "$$LATEST" ]; then \
 		echo "No backup files found!"; \
 		exit 1; \
 	fi; \
 	echo "Restoring from $$LATEST..."; \
-	docker-compose stop backend frontend; \
-	cat $$LATEST | docker-compose exec -T db psql -U financeuser -d finance_tracker; \
-	docker-compose start backend frontend; \
+	$(DOCKER_COMPOSE) stop backend frontend; \
+	cat $$LATEST | $(DOCKER_COMPOSE) exec -T db psql -U financeuser -d finance_tracker; \
+	$(DOCKER_COMPOSE) start backend frontend; \
 	echo "Restore complete!"
 
 # Pull latest code and rebuild
 update:
 	git pull origin main
-	docker-compose down
-	docker-compose build
-	docker-compose up -d
+	$(DOCKER_COMPOSE) down
+	$(DOCKER_COMPOSE) build
+	$(DOCKER_COMPOSE) up -d
 	@echo "Update complete!"
 
 # Show real-time resource usage
@@ -107,11 +112,11 @@ monitor:
 
 # Open shell in backend container
 shell-backend:
-	docker-compose exec backend /bin/sh
+	$(DOCKER_COMPOSE) exec backend /bin/sh
 
 # Open PostgreSQL shell
 shell-db:
-	docker-compose exec db psql -U financeuser -d finance_tracker
+	$(DOCKER_COMPOSE) exec db psql -U financeuser -d finance_tracker
 
 # Check health of all services
 health:
@@ -121,7 +126,7 @@ health:
 	@echo "\n\nFrontend:"
 	@curl -s http://localhost/health || echo "Frontend not responding"
 	@echo "\n\nDatabase:"
-	@docker-compose exec db pg_isready -U financeuser || echo "Database not responding"
+	@$(DOCKER_COMPOSE) exec db pg_isready -U financeuser || echo "Database not responding"
 	@echo "\n"
 
 # Install/setup for first time
@@ -140,3 +145,23 @@ install:
 	@echo "2. Run 'make build' to build images"
 	@echo "3. Run 'make up' to start services"
 
+# Quick deploy (build and start)
+deploy:
+	$(DOCKER_COMPOSE) up -d --build
+	@echo "Deployment complete!"
+	@echo "Check status with: make status"
+
+# Stop specific service
+stop-%:
+	$(DOCKER_COMPOSE) stop $*
+
+# Start specific service
+start-%:
+	$(DOCKER_COMPOSE) start $*
+
+# Rebuild specific service
+rebuild-%:
+	$(DOCKER_COMPOSE) stop $*
+	$(DOCKER_COMPOSE) build $*
+	$(DOCKER_COMPOSE) up -d $*
+	@echo "Rebuilt and restarted $*"

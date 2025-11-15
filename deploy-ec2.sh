@@ -40,7 +40,13 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-if ! command -v docker-compose &> /dev/null; then
+if ! command -v docker &> /dev/null; then
+    print_error "Docker is not installed. Please install Docker first."
+    exit 1
+fi
+
+# Check for Docker Compose (V2 or V1)
+if ! docker compose version &> /dev/null && ! command -v docker-compose &> /dev/null; then
     print_error "Docker Compose is not installed. Please install Docker Compose first."
     exit 1
 fi
@@ -106,16 +112,16 @@ fi
 # Step 5: Stop existing containers (if any)
 if [ "$(docker ps -aq -f name=finance-tracker)" ]; then
     print_info "Stopping existing containers..."
-    docker-compose down
+    docker compose down 2>/dev/null || docker-compose down
 fi
 
 # Step 6: Build images
 print_info "Building Docker images (this may take a few minutes)..."
-docker-compose build
+docker compose build 2>/dev/null || docker-compose build
 
 # Step 7: Start services
 print_info "Starting services..."
-docker-compose up -d
+docker compose up -d 2>/dev/null || docker-compose up -d
 
 # Step 8: Wait for services to be healthy
 print_info "Waiting for services to be ready..."
@@ -161,7 +167,7 @@ else
 fi
 
 # Check database
-if docker-compose exec -T db pg_isready -U financeuser > /dev/null 2>&1; then
+if docker compose exec -T db pg_isready -U financeuser > /dev/null 2>&1 || docker-compose exec -T db pg_isready -U financeuser > /dev/null 2>&1; then
     print_info "✓ Database is healthy"
 else
     print_warning "✗ Database is not responding (might still be starting)"
