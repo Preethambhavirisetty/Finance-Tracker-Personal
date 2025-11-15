@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies (npm ci is faster and more reliable for Docker)
 RUN npm ci
 
 # Copy source code
