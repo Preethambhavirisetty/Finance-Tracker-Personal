@@ -1,13 +1,14 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { PlusCircle, Trash2, User, LogOut, TrendingUp, TrendingDown, Wallet, PieChart, DollarSign, Calendar, Lock, Mail, LogIn } from 'lucide-react';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+import { PlusCircle, Trash2, User, LogOut, TrendingUp, TrendingDown, Wallet, PieChart, DollarSign, Calendar, Lock, Mail, LogIn, AlertCircle } from 'lucide-react';
+import { api, APIError } from './utils/api';
+import { validateEmail, validateUsername, validatePassword, getPasswordStrength, validateTransaction, validateProfileName } from './utils/validation';
 
 const FinanceTracker = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [showLogin, setShowLogin] = useState(true);
   const [authLoading, setAuthLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Auth form states
   const [authForm, setAuthForm] = useState({
@@ -16,6 +17,8 @@ const FinanceTracker = () => {
     password: ''
   });
   const [authError, setAuthError] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
   
   const [profiles, setProfiles] = useState([]);
   const [currentProfile, setCurrentProfile] = useState(null);
@@ -33,26 +36,36 @@ const FinanceTracker = () => {
     date: new Date().toISOString().split('T')[0]
   });
 
+  // Handle unauthorized events
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      setProfiles([]);
+      setCurrentProfile(null);
+      setAuthError('Your session has expired. Please log in again.');
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, []);
+
   const loadProfiles = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/profiles`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const data = await api.getProfiles();
       setProfiles(data);
       setShowProfileSelect(true);
     } catch (error) {
-      console.error('Failed to load profiles:', error);
+      if (error instanceof APIError && error.status !== 401) {
+        console.error('Failed to load profiles:', error.message);
+      }
     }
-  }, [setProfiles, setShowProfileSelect]);
+  }, []);
 
   // Check authentication on mount
   const checkAuth = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/check-auth`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const data = await api.checkAuth();
       if (data.authenticated) {
         setIsAuthenticated(true);
         setCurrentUser(data.user);
@@ -63,118 +76,146 @@ const FinanceTracker = () => {
     } finally {
       setAuthLoading(false);
     }
-  }, [loadProfiles, setIsAuthenticated, setCurrentUser]);
+  }, [loadProfiles]);
   
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
+  // Update password strength on change
+  useEffect(() => {
+    if (!showLogin && authForm.password) {
+      setPasswordStrength(getPasswordStrength(authForm.password));
+    } else {
+      setPasswordStrength(null);
+    }
+  }, [authForm.password, showLogin]);
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setAuthError('');
+    setFieldErrors({});
+    setIsSubmitting(true);
+    
+    // Validate username
+    const usernameValidation = validateUsername(authForm.username);
+    if (!usernameValidation.valid) {
+      setFieldErrors(prev => ({ ...prev, username: usernameValidation.error }));
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate email
+    if (!validateEmail(authForm.email)) {
+      setFieldErrors(prev => ({ ...prev, email: 'Please enter a valid email address' }));
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate password
+    const passwordValidation = validatePassword(authForm.password);
+    if (!passwordValidation.valid) {
+      setFieldErrors(prev => ({ ...prev, password: passwordValidation.error }));
+      setIsSubmitting(false);
+      return;
+    }
     
     try {
-      const response = await fetch(`${API_URL}/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(authForm)
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        setIsAuthenticated(true);
-        setCurrentUser(data.user);
-        loadProfiles();
-      } else {
-        setAuthError(data.error);
-      }
+      const data = await api.register(authForm.username, authForm.email, authForm.password);
+      setIsAuthenticated(true);
+      setCurrentUser(data.user);
+      loadProfiles();
     } catch (error) {
-      setAuthError('Registration failed. Please try again.');
+      if (error instanceof APIError) {
+        setAuthError(error.message);
+      } else {
+        setAuthError('Registration failed. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setAuthError('');
+    setFieldErrors({});
+    setIsSubmitting(true);
+    
+    if (!authForm.username || !authForm.password) {
+      setAuthError('Username and password are required');
+      setIsSubmitting(false);
+      return;
+    }
     
     try {
-      const response = await fetch(`${API_URL}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          username: authForm.username,
-          password: authForm.password
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        setIsAuthenticated(true);
-        setCurrentUser(data.user);
-        loadProfiles();
-      } else {
-        setAuthError(data.error);
-      }
+      const data = await api.login(authForm.username, authForm.password);
+      setIsAuthenticated(true);
+      setCurrentUser(data.user);
+      setAuthForm({ username: '', email: '', password: '' });
+      loadProfiles();
     } catch (error) {
-      setAuthError('Login failed. Please try again.');
+      if (error instanceof APIError) {
+        setAuthError(error.message);
+      } else {
+        setAuthError('Login failed. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleLogout = async () => {
     try {
-      await fetch(`${API_URL}/logout`, {
-        method: 'POST',
-        credentials: 'include'
-      });
+      await api.logout();
       setIsAuthenticated(false);
       setCurrentUser(null);
       setProfiles([]);
       setCurrentProfile(null);
       setShowProfileSelect(false);
+      setTransactions([]);
       setAuthForm({ username: '', email: '', password: '' });
+      setAuthError('');
+      setFieldErrors({});
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
 
   const createProfile = async () => {
-    if (newProfileName.trim()) {
-      try {
-        const response = await fetch(`${API_URL}/profiles`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ name: newProfileName })
-        });
-        
-        const newProfile = await response.json();
-        setProfiles([...profiles, newProfile]);
-        setNewProfileName('');
-        selectProfile(newProfile);
-      } catch (error) {
-        console.error('Failed to create profile:', error);
-      }
+    const validation = validateProfileName(newProfileName);
+    if (!validation.valid) {
+      alert(validation.error);
+      return;
+    }
+    
+    try {
+      const newProfile = await api.createProfile(newProfileName);
+      setProfiles([...profiles, newProfile]);
+      setNewProfileName('');
+      selectProfile(newProfile);
+    } catch (error) {
+      const message = error instanceof APIError ? error.message : 'Failed to create profile';
+      alert(message);
     }
   };
 
   const deleteProfile = async (profileId) => {
+    if (!window.confirm('Are you sure you want to delete this profile? All transactions will be permanently deleted.')) {
+      return;
+    }
+    
     try {
-      await fetch(`${API_URL}/profiles/${profileId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      
+      await api.deleteProfile(profileId);
       setProfiles(profiles.filter(p => p.id !== profileId));
       if (currentProfile?.id === profileId) {
         setCurrentProfile(null);
         setShowProfileSelect(true);
+        setTransactions([]);
       }
     } catch (error) {
-      console.error('Failed to delete profile:', error);
+      const message = error instanceof APIError ? error.message : 'Failed to delete profile';
+      alert(message);
     }
   };
 
@@ -186,53 +227,51 @@ const FinanceTracker = () => {
 
   const loadTransactions = async (profileId) => {
     try {
-      const response = await fetch(`${API_URL}/profiles/${profileId}/transactions`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const data = await api.getTransactions(profileId);
       setTransactions(data);
     } catch (error) {
-      console.error('Failed to load transactions:', error);
-    }
-  };
-
-  const addTransaction = async () => {
-    if (newTransaction.amount && newTransaction.category) {
-      try {
-        const response = await fetch(`${API_URL}/profiles/${currentProfile.id}/transactions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(newTransaction)
-        });
-        
-        const transaction = await response.json();
-        setTransactions([...transactions, transaction]);
-        
-        setNewTransaction({
-          type: 'expense',
-          amount: '',
-          category: '',
-          description: '',
-          date: new Date().toISOString().split('T')[0]
-        });
-        setShowAddTransaction(false);
-      } catch (error) {
-        console.error('Failed to add transaction:', error);
+      if (error instanceof APIError && error.status !== 401) {
+        console.error('Failed to load transactions:', error.message);
       }
     }
   };
 
-  const deleteTransaction = async (transactionId) => {
+  const addTransaction = async () => {
+    const validation = validateTransaction(newTransaction);
+    if (!validation.valid) {
+      alert(validation.errors.join('\n'));
+      return;
+    }
+    
     try {
-      await fetch(`${API_URL}/transactions/${transactionId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
+      const transaction = await api.createTransaction(currentProfile.id, newTransaction);
+      setTransactions([transaction, ...transactions]);
       
+      setNewTransaction({
+        type: 'expense',
+        amount: '',
+        category: '',
+        description: '',
+        date: new Date().toISOString().split('T')[0]
+      });
+      setShowAddTransaction(false);
+    } catch (error) {
+      const message = error instanceof APIError ? error.message : 'Failed to add transaction';
+      alert(message);
+    }
+  };
+
+  const deleteTransaction = async (transactionId) => {
+    if (!window.confirm('Are you sure you want to delete this transaction?')) {
+      return;
+    }
+    
+    try {
+      await api.deleteTransaction(transactionId);
       setTransactions(transactions.filter(t => t.id !== transactionId));
     } catch (error) {
-      console.error('Failed to delete transaction:', error);
+      const message = error instanceof APIError ? error.message : 'Failed to delete transaction';
+      alert(message);
     }
   };
 
@@ -272,7 +311,6 @@ const FinanceTracker = () => {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-white p-8" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
-        {API_URL}
         <div className="max-w-md mx-auto">
           <div className="text-center mb-12">
             <DollarSign className="w-20 h-20 text-gray-900 mx-auto mb-4" />
@@ -320,11 +358,22 @@ const FinanceTracker = () => {
                   <input
                     type="text"
                     value={authForm.username}
-                    onChange={(e) => setAuthForm({ ...authForm, username: e.target.value })}
-                    className="w-full px-6 py-4 bg-white rounded-2xl text-gray-900 placeholder-gray-400 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent"
+                    onChange={(e) => {
+                      setAuthForm({ ...authForm, username: e.target.value });
+                      setFieldErrors(prev => ({ ...prev, username: null }));
+                    }}
+                    className={`w-full px-6 py-4 bg-white rounded-2xl text-gray-900 placeholder-gray-400 border-2 ${
+                      fieldErrors.username ? 'border-red-500' : 'border-gray-300'
+                    } focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent`}
                     placeholder="Enter your username"
                     required
                   />
+                  {fieldErrors.username && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {fieldErrors.username}
+                    </p>
+                  )}
                 </div>
 
                 {!showLogin && (
@@ -336,11 +385,22 @@ const FinanceTracker = () => {
                     <input
                       type="email"
                       value={authForm.email}
-                      onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
-                      className="w-full px-6 py-4 bg-white rounded-2xl text-gray-900 placeholder-gray-400 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent"
+                      onChange={(e) => {
+                        setAuthForm({ ...authForm, email: e.target.value });
+                        setFieldErrors(prev => ({ ...prev, email: null }));
+                      }}
+                      className={`w-full px-6 py-4 bg-white rounded-2xl text-gray-900 placeholder-gray-400 border-2 ${
+                        fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                      } focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent`}
                       placeholder="Enter your email"
                       required
                     />
+                    {fieldErrors.email && (
+                      <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {fieldErrors.email}
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -352,20 +412,64 @@ const FinanceTracker = () => {
                   <input
                     type="password"
                     value={authForm.password}
-                    onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
-                    className="w-full px-6 py-4 bg-white rounded-2xl text-gray-900 placeholder-gray-400 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent"
+                    onChange={(e) => {
+                      setAuthForm({ ...authForm, password: e.target.value });
+                      setFieldErrors(prev => ({ ...prev, password: null }));
+                    }}
+                    className={`w-full px-6 py-4 bg-white rounded-2xl text-gray-900 placeholder-gray-400 border-2 ${
+                      fieldErrors.password ? 'border-red-500' : 'border-gray-300'
+                    } focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent`}
                     placeholder="Enter your password"
                     required
                   />
+                  {fieldErrors.password && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {fieldErrors.password}
+                    </p>
+                  )}
+                  {!showLogin && passwordStrength && (
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-gray-600">Password Strength:</span>
+                        <span className={`text-sm font-semibold ${
+                          passwordStrength.level === 'weak' ? 'text-red-600' :
+                          passwordStrength.level === 'medium' ? 'text-yellow-600' :
+                          'text-green-600'
+                        }`}>{passwordStrength.text}</span>
+                      </div>
+                      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full ${passwordStrength.color} transition-all duration-300`}
+                          style={{ 
+                            width: passwordStrength.level === 'weak' ? '33%' :
+                                   passwordStrength.level === 'medium' ? '66%' : '100%'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full mt-6 px-6 py-4 bg-gray-900 text-white rounded-2xl font-semibold hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-lg"
+                disabled={isSubmitting}
+                className={`w-full mt-6 px-6 py-4 bg-gray-900 text-white rounded-2xl font-semibold transition-all duration-300 shadow-lg flex items-center justify-center gap-2 text-lg ${
+                  isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800 hover:shadow-xl'
+                }`}
               >
-                <LogIn className="w-6 h-6" />
-                {showLogin ? 'Login' : 'Register'}
+                {isSubmitting ? (
+                  <>
+                    <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="w-6 h-6" />
+                    {showLogin ? 'Login' : 'Register'}
+                  </>
+                )}
               </button>
             </form>
           </div>
