@@ -310,19 +310,19 @@ const FinanceTracker = () => {
   // Login/Register Screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-white p-4 sm:p-6 md:p-8" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
+      <div className="min-h-screen bg-white p-3 sm:p-6 md:p-8" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
         <div className="max-w-md mx-auto">
-          <div className="text-center mb-8 sm:mb-12">
-            <DollarSign className="w-16 h-16 sm:w-20 sm:h-20 text-gray-900 mx-auto mb-3 sm:mb-4" />
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-3 sm:mb-4 px-2" style={{ letterSpacing: '0.02em' }}>Finance Tracker</h1>
-            <p className="text-lg sm:text-xl text-gray-600 font-light italic px-4">Manage your wealth with elegance</p>
+          <div className="text-center mb-6 sm:mb-12">
+            <DollarSign className="w-12 h-12 sm:w-20 sm:h-20 text-gray-900 mx-auto mb-2 sm:mb-4" />
+            <h1 className="text-2xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-2 sm:mb-4 px-2" style={{ letterSpacing: '0.02em' }}>Finance Tracker</h1>
+            <p className="text-sm sm:text-xl text-gray-600 font-light italic px-4">Manage your wealth with elegance</p>
           </div>
 
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl border-2 border-gray-200">
-            <div className="flex gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl sm:rounded-3xl p-4 sm:p-8 shadow-2xl border-2 border-gray-200">
+            <div className="flex gap-2 sm:gap-4 mb-4 sm:mb-8">
               <button
                 onClick={() => setShowLogin(true)}
-                className={`flex-1 py-3 sm:py-3 rounded-xl sm:rounded-2xl font-semibold transition-all duration-300 text-sm sm:text-base ${
+                className={`flex-1 py-2.5 sm:py-3 rounded-lg sm:rounded-2xl font-semibold transition-all duration-300 text-xs sm:text-base ${
                   showLogin
                     ? 'bg-gray-900 text-white shadow-lg'
                     : 'bg-white text-gray-600 hover:bg-gray-50'
@@ -332,7 +332,7 @@ const FinanceTracker = () => {
               </button>
               <button
                 onClick={() => setShowLogin(false)}
-                className={`flex-1 py-3 sm:py-3 rounded-xl sm:rounded-2xl font-semibold transition-all duration-300 text-sm sm:text-base ${
+                className={`flex-1 py-2.5 sm:py-3 rounded-lg sm:rounded-2xl font-semibold transition-all duration-300 text-xs sm:text-base ${
                   !showLogin
                     ? 'bg-gray-900 text-white shadow-lg'
                     : 'bg-white text-gray-600 hover:bg-gray-50'
@@ -343,16 +343,16 @@ const FinanceTracker = () => {
             </div>
 
             {authError && (
-              <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border-2 border-red-200 rounded-xl sm:rounded-2xl">
-                <p className="text-red-700 text-center text-sm sm:text-base">{authError}</p>
+              <div className="mb-3 sm:mb-6 p-2.5 sm:p-4 bg-red-50 border-2 border-red-200 rounded-lg sm:rounded-2xl">
+                <p className="text-red-700 text-center text-xs sm:text-base">{authError}</p>
               </div>
             )}
 
             <form onSubmit={showLogin ? handleLogin : handleRegister}>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <label className="flex items-center gap-2 text-gray-700 mb-2 font-semibold text-sm sm:text-base">
-                    <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <label className="flex items-center gap-1.5 sm:gap-2 text-gray-700 mb-1.5 sm:mb-2 font-semibold text-xs sm:text-base">
+                    <User className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                     Username
                   </label>
                   <input
@@ -362,15 +362,15 @@ const FinanceTracker = () => {
                       setAuthForm({ ...authForm, username: e.target.value });
                       setFieldErrors(prev => ({ ...prev, username: null }));
                     }}
-                    className={`w-full px-4 sm:px-6 py-3 sm:py-4 bg-white rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 text-sm sm:text-base ${
+                    className={`w-full px-3 sm:px-6 py-2 sm:py-4 bg-white rounded-lg sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 text-xs sm:text-base ${
                       fieldErrors.username ? 'border-red-500' : 'border-gray-300'
                     } focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent`}
-                    placeholder="Enter your username"
+                    placeholder="Enter username"
                     required
                   />
                   {fieldErrors.username && (
-                    <p className="mt-2 text-xs sm:text-sm text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-4 h-4" />
+                    <p className="mt-1 sm:mt-2 text-[10px] sm:text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                       {fieldErrors.username}
                     </p>
                   )}
@@ -378,8 +378,8 @@ const FinanceTracker = () => {
 
                 {!showLogin && (
                   <div>
-                    <label className="flex items-center gap-2 text-gray-700 mb-2 font-semibold text-sm sm:text-base">
-                      <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <label className="flex items-center gap-1.5 sm:gap-2 text-gray-700 mb-1.5 sm:mb-2 font-semibold text-xs sm:text-base">
+                      <Mail className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                       Email
                     </label>
                     <input
@@ -389,15 +389,15 @@ const FinanceTracker = () => {
                         setAuthForm({ ...authForm, email: e.target.value });
                         setFieldErrors(prev => ({ ...prev, email: null }));
                       }}
-                      className={`w-full px-4 sm:px-6 py-3 sm:py-4 bg-white rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 text-sm sm:text-base ${
+                      className={`w-full px-3 sm:px-6 py-2 sm:py-4 bg-white rounded-lg sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 text-xs sm:text-base ${
                         fieldErrors.email ? 'border-red-500' : 'border-gray-300'
                       } focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent`}
-                      placeholder="Enter your email"
+                      placeholder="Enter email"
                       required
                     />
                     {fieldErrors.email && (
-                      <p className="mt-2 text-xs sm:text-sm text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
+                      <p className="mt-1 sm:mt-2 text-[10px] sm:text-sm text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                         {fieldErrors.email}
                       </p>
                     )}
@@ -405,8 +405,8 @@ const FinanceTracker = () => {
                 )}
 
                 <div>
-                  <label className="flex items-center gap-2 text-gray-700 mb-2 font-semibold text-sm sm:text-base">
-                    <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <label className="flex items-center gap-1.5 sm:gap-2 text-gray-700 mb-1.5 sm:mb-2 font-semibold text-xs sm:text-base">
+                    <Lock className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                     Password
                   </label>
                   <input
@@ -416,29 +416,29 @@ const FinanceTracker = () => {
                       setAuthForm({ ...authForm, password: e.target.value });
                       setFieldErrors(prev => ({ ...prev, password: null }));
                     }}
-                    className={`w-full px-4 sm:px-6 py-3 sm:py-4 bg-white rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 text-sm sm:text-base ${
+                    className={`w-full px-3 sm:px-6 py-2 sm:py-4 bg-white rounded-lg sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 text-xs sm:text-base ${
                       fieldErrors.password ? 'border-red-500' : 'border-gray-300'
                     } focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent`}
-                    placeholder="Enter your password"
+                    placeholder="Enter password"
                     required
                   />
                   {fieldErrors.password && (
-                    <p className="mt-2 text-xs sm:text-sm text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-4 h-4" />
+                    <p className="mt-1 sm:mt-2 text-[10px] sm:text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                       {fieldErrors.password}
                     </p>
                   )}
                   {!showLogin && passwordStrength && (
-                    <div className="mt-2">
+                    <div className="mt-1.5 sm:mt-2">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs sm:text-sm text-gray-600">Password Strength:</span>
-                        <span className={`text-xs sm:text-sm font-semibold ${
+                        <span className="text-[10px] sm:text-sm text-gray-600">Strength:</span>
+                        <span className={`text-[10px] sm:text-sm font-semibold ${
                           passwordStrength.level === 'weak' ? 'text-red-600' :
                           passwordStrength.level === 'medium' ? 'text-yellow-600' :
                           'text-green-600'
                         }`}>{passwordStrength.text}</span>
                       </div>
-                      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 sm:h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div 
                           className={`h-full ${passwordStrength.color} transition-all duration-300`}
                           style={{ 
@@ -455,18 +455,18 @@ const FinanceTracker = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full mt-4 sm:mt-6 px-4 sm:px-6 py-3 sm:py-4 bg-gray-900 text-white rounded-xl sm:rounded-2xl font-semibold transition-all duration-300 shadow-lg flex items-center justify-center gap-2 text-base sm:text-lg ${
+                className={`w-full mt-3 sm:mt-6 px-4 sm:px-6 py-2.5 sm:py-4 bg-gray-900 text-white rounded-lg sm:rounded-2xl font-semibold transition-all duration-300 shadow-lg flex items-center justify-center gap-2 text-sm sm:text-lg ${
                   isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800 hover:shadow-xl'
                 }`}
               >
                 {isSubmitting ? (
                   <>
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm sm:text-base">Processing...</span>
+                    <div className="w-4 h-4 sm:w-6 sm:h-6 border-2 sm:border-3 border-white border-t-transparent rounded-full animate-spin" />
+                    <span className="text-xs sm:text-base">Processing...</span>
                   </>
                 ) : (
                   <>
-                    <LogIn className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <LogIn className="w-4 h-4 sm:w-6 sm:h-6" />
                     {showLogin ? 'Login' : 'Register'}
                   </>
                 )}
@@ -484,42 +484,42 @@ const FinanceTracker = () => {
   // Profile Selection Screen
   if (showProfileSelect) {
     return (
-      <div className="min-h-screen bg-white p-4 sm:p-6 md:p-8" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
+      <div className="min-h-screen bg-white p-3 sm:p-6 md:p-8" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
         <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-8">
             <div className="flex-1">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-1 sm:mb-2" style={{ letterSpacing: '0.02em' }}>Welcome, {currentUser?.username}</h1>
-              <p className="text-base sm:text-lg md:text-xl text-gray-600 font-light italic">Select or create a profile</p>
+              <h1 className="text-xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-1 sm:mb-2" style={{ letterSpacing: '0.02em' }}>Welcome, {currentUser?.username}</h1>
+              <p className="text-xs sm:text-lg md:text-xl text-gray-600 font-light italic">Select or create a profile</p>
             </div>
             <button
               onClick={handleLogout}
-              className="px-4 sm:px-6 py-2 sm:py-3 bg-gray-900 text-white rounded-xl sm:rounded-2xl font-semibold hover:bg-gray-800 transition-all duration-300 flex items-center gap-2 text-sm sm:text-base"
+              className="px-3 sm:px-6 py-1.5 sm:py-3 bg-gray-900 text-white rounded-lg sm:rounded-2xl font-semibold hover:bg-gray-800 transition-all duration-300 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-base"
             >
-              <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+              <LogOut className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
               Logout
             </button>
           </div>
 
           {/* Create Profile Card */}
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 shadow-2xl border-2 border-gray-200 mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
-              <User className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-gray-700" />
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl border-2 border-gray-200 mb-4 sm:mb-8">
+            <h2 className="text-base sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-3 sm:mb-6 flex items-center gap-2 sm:gap-3">
+              <User className="w-4 h-4 sm:w-7 sm:h-7 md:w-8 md:h-8 text-gray-700" />
               Create New Profile
             </h2>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <input
                 type="text"
                 value={newProfileName}
                 onChange={(e) => setNewProfileName(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && createProfile()}
-                placeholder="Enter your distinguished name..."
-                className="flex-1 px-4 sm:px-6 py-3 sm:py-4 bg-white rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm text-sm sm:text-base"
+                placeholder="Profile name..."
+                className="flex-1 px-3 sm:px-6 py-2 sm:py-4 bg-white rounded-lg sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm text-xs sm:text-base"
               />
               <button
                 onClick={createProfile}
-                className="px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 text-white rounded-xl sm:rounded-2xl font-semibold hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm sm:text-base"
+                className="px-4 sm:px-8 py-2 sm:py-4 bg-gray-900 text-white rounded-lg sm:rounded-2xl font-semibold hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-xs sm:text-base whitespace-nowrap"
               >
-                <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                <PlusCircle className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                 Create
               </button>
             </div>
@@ -571,11 +571,11 @@ const FinanceTracker = () => {
     <div className="min-h-screen bg-white p-3 sm:p-4 md:p-6 lg:p-8" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 sm:mb-8 pb-4 sm:pb-6 border-b-2 border-gray-200">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 sm:gap-4 mb-4 sm:mb-8 pb-3 sm:pb-6 border-b-2 border-gray-200">
           <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-1 sm:mb-2" style={{ letterSpacing: '0.02em' }}>Finance Dashboard</h1>
-            <p className="text-base sm:text-lg md:text-xl text-gray-600 flex items-center gap-2 font-light italic">
-              <User className="w-4 h-4 sm:w-5 sm:h-5" />
+            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-1 sm:mb-2" style={{ letterSpacing: '0.02em' }}>Finance Dashboard</h1>
+            <p className="text-xs sm:text-lg md:text-xl text-gray-600 flex items-center gap-1.5 sm:gap-2 font-light italic">
+              <User className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
               {currentProfile?.name}
             </p>
           </div>
@@ -585,76 +585,76 @@ const FinanceTracker = () => {
                 setCurrentProfile(null);
                 setShowProfileSelect(true);
               }}
-              className="px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-white text-gray-900 rounded-xl sm:rounded-2xl font-semibold hover:bg-gray-50 transition-all duration-300 border-2 border-gray-300 flex items-center justify-center gap-2 text-sm sm:text-base"
+              className="px-3 sm:px-5 md:px-6 py-1.5 sm:py-2.5 md:py-3 bg-white text-gray-900 rounded-lg sm:rounded-2xl font-semibold hover:bg-gray-50 transition-all duration-300 border-2 border-gray-300 flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-base"
             >
-              <User className="w-4 h-4 sm:w-5 sm:h-5" />
+              <User className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
               <span className="hidden sm:inline">Switch Profile</span>
               <span className="sm:hidden">Switch</span>
             </button>
             <button
               onClick={handleLogout}
-              className="px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-gray-900 text-white rounded-xl sm:rounded-2xl font-semibold hover:bg-gray-800 transition-all duration-300 border-2 border-gray-900 flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
+              className="px-3 sm:px-5 md:px-6 py-1.5 sm:py-2.5 md:py-3 bg-gray-900 text-white rounded-lg sm:rounded-2xl font-semibold hover:bg-gray-800 transition-all duration-300 border-2 border-gray-900 flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg text-xs sm:text-base"
             >
-              <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+              <LogOut className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
               Logout
             </button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 shadow-xl border-2 border-green-200 hover:shadow-2xl transition-all duration-300">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900">Total Income</h3>
-              <TrendingUp className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-green-600" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6 mb-4 sm:mb-8">
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 shadow-xl border-2 border-green-200 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <h3 className="text-xs sm:text-lg md:text-xl font-semibold text-gray-900">Income</h3>
+              <TrendingUp className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-green-600" />
             </div>
-            <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-green-700">${stats.income.toFixed(2)}</p>
-            <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2 font-light italic">Earnings accumulated</p>
+            <p className="text-2xl sm:text-4xl md:text-5xl font-bold text-green-700">${stats.income.toFixed(2)}</p>
+            <p className="text-[10px] sm:text-sm text-gray-600 mt-0.5 sm:mt-2 font-light italic">Earnings</p>
           </div>
 
-          <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 shadow-xl border-2 border-red-200 hover:shadow-2xl transition-all duration-300">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900">Total Expenses</h3>
-              <TrendingDown className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-red-600" />
+          <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 shadow-xl border-2 border-red-200 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <h3 className="text-xs sm:text-lg md:text-xl font-semibold text-gray-900">Expenses</h3>
+              <TrendingDown className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-red-600" />
             </div>
-            <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-red-700">${stats.expenses.toFixed(2)}</p>
-            <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2 font-light italic">Expenditure tracked</p>
+            <p className="text-2xl sm:text-4xl md:text-5xl font-bold text-red-700">${stats.expenses.toFixed(2)}</p>
+            <p className="text-[10px] sm:text-sm text-gray-600 mt-0.5 sm:mt-2 font-light italic">Spending</p>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 shadow-xl border-2 border-blue-200 hover:shadow-2xl transition-all duration-300 sm:col-span-2 lg:col-span-1">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900">Net Balance</h3>
-              <Wallet className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-blue-600" />
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 shadow-xl border-2 border-blue-200 hover:shadow-2xl transition-all duration-300 sm:col-span-2 lg:col-span-1">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <h3 className="text-xs sm:text-lg md:text-xl font-semibold text-gray-900">Balance</h3>
+              <Wallet className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-blue-600" />
             </div>
-            <p className={`text-3xl sm:text-4xl md:text-5xl font-bold ${stats.balance >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+            <p className={`text-2xl sm:text-4xl md:text-5xl font-bold ${stats.balance >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
               ${stats.balance.toFixed(2)}
             </p>
-            <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2 font-light italic">Current standing</p>
+            <p className="text-[10px] sm:text-sm text-gray-600 mt-0.5 sm:mt-2 font-light italic">Net</p>
           </div>
         </div>
 
         {/* Add Transaction Button */}
-        <div className="mb-4 sm:mb-6">
+        <div className="mb-3 sm:mb-6">
           <button
             onClick={() => setShowAddTransaction(!showAddTransaction)}
-            className="w-full md:w-auto px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 bg-gray-900 text-white rounded-xl sm:rounded-2xl font-semibold hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-2xl flex items-center justify-center gap-2 sm:gap-3 text-base sm:text-lg"
+            className="w-full md:w-auto px-4 sm:px-8 md:px-10 py-2.5 sm:py-4 md:py-5 bg-gray-900 text-white rounded-lg sm:rounded-2xl font-semibold hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-2xl flex items-center justify-center gap-2 sm:gap-3 text-sm sm:text-lg"
           >
-            <PlusCircle className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+            <PlusCircle className="w-4 h-4 sm:w-6 sm:h-6 md:w-7 md:h-7" />
             Add Transaction
           </button>
         </div>
 
         {/* Add Transaction Form */}
         {showAddTransaction && (
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 shadow-2xl border-2 border-gray-200 mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-4 sm:mb-6">New Transaction</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl border-2 border-gray-200 mb-4 sm:mb-8">
+            <h2 className="text-base sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-3 sm:mb-6">New Transaction</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
               <div>
-                <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base md:text-lg">Type</label>
+                <label className="block text-gray-700 mb-1.5 sm:mb-2 font-semibold text-xs sm:text-base md:text-lg">Type</label>
                 <select
                   value={newTransaction.type}
                   onChange={(e) => setNewTransaction({ ...newTransaction, type: e.target.value })}
-                  className="w-full px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 md:py-4 bg-white rounded-xl sm:rounded-2xl text-gray-900 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm text-sm sm:text-base"
+                  className="w-full px-3 sm:px-5 md:px-6 py-2 sm:py-3.5 md:py-4 bg-white rounded-lg sm:rounded-2xl text-gray-900 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm text-xs sm:text-base"
                 >
                   <option value="expense">Expense</option>
                   <option value="income">Income</option>
@@ -662,59 +662,59 @@ const FinanceTracker = () => {
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base md:text-lg">Amount</label>
+                <label className="block text-gray-700 mb-1.5 sm:mb-2 font-semibold text-xs sm:text-base md:text-lg">Amount</label>
                 <input
                   type="number"
                   value={newTransaction.amount}
                   onChange={(e) => setNewTransaction({ ...newTransaction, amount: e.target.value })}
                   placeholder="0.00"
-                  className="w-full px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 md:py-4 bg-white rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm text-sm sm:text-base"
+                  className="w-full px-3 sm:px-5 md:px-6 py-2 sm:py-3.5 md:py-4 bg-white rounded-lg sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm text-xs sm:text-base"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base md:text-lg">Category</label>
+                <label className="block text-gray-700 mb-1.5 sm:mb-2 font-semibold text-xs sm:text-base md:text-lg">Category</label>
                 <input
                   type="text"
                   value={newTransaction.category}
                   onChange={(e) => setNewTransaction({ ...newTransaction, category: e.target.value })}
-                  placeholder="e.g., Dining, Salary, Transport"
-                  className="w-full px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 md:py-4 bg-white rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm text-sm sm:text-base"
+                  placeholder="e.g., Dining, Salary"
+                  className="w-full px-3 sm:px-5 md:px-6 py-2 sm:py-3.5 md:py-4 bg-white rounded-lg sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm text-xs sm:text-base"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base md:text-lg">Date</label>
+                <label className="block text-gray-700 mb-1.5 sm:mb-2 font-semibold text-xs sm:text-base md:text-lg">Date</label>
                 <input
                   type="date"
                   value={newTransaction.date}
                   onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
-                  className="w-full px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 md:py-4 bg-white rounded-xl sm:rounded-2xl text-gray-900 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm text-sm sm:text-base"
+                  className="w-full px-3 sm:px-5 md:px-6 py-2 sm:py-3.5 md:py-4 bg-white rounded-lg sm:rounded-2xl text-gray-900 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm text-xs sm:text-base"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base md:text-lg">Description</label>
+                <label className="block text-gray-700 mb-1.5 sm:mb-2 font-semibold text-xs sm:text-base md:text-lg">Description</label>
                 <input
                   type="text"
                   value={newTransaction.description}
                   onChange={(e) => setNewTransaction({ ...newTransaction, description: e.target.value })}
-                  placeholder="Optional details..."
-                  className="w-full px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 md:py-4 bg-white rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm text-sm sm:text-base"
+                  placeholder="Optional..."
+                  className="w-full px-3 sm:px-5 md:px-6 py-2 sm:py-3.5 md:py-4 bg-white rounded-lg sm:rounded-2xl text-gray-900 placeholder-gray-400 border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm text-xs sm:text-base"
                 />
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4 sm:mt-6">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-3 sm:mt-6">
               <button
                 onClick={addTransaction}
-                className="flex-1 px-4 sm:px-6 py-3 sm:py-4 bg-green-600 text-white rounded-xl sm:rounded-2xl font-semibold hover:bg-green-700 transition-all duration-300 shadow-lg text-sm sm:text-base md:text-lg"
+                className="flex-1 px-4 sm:px-6 py-2.5 sm:py-4 bg-green-600 text-white rounded-lg sm:rounded-2xl font-semibold hover:bg-green-700 transition-all duration-300 shadow-lg text-xs sm:text-base md:text-lg"
               >
                 Add Transaction
               </button>
               <button
                 onClick={() => setShowAddTransaction(false)}
-                className="px-4 sm:px-6 py-3 sm:py-4 bg-white text-gray-900 rounded-xl sm:rounded-2xl font-semibold hover:bg-gray-100 transition-all duration-300 border-2 border-gray-300 text-sm sm:text-base md:text-lg"
+                className="px-4 sm:px-6 py-2.5 sm:py-4 bg-white text-gray-900 rounded-lg sm:rounded-2xl font-semibold hover:bg-gray-100 transition-all duration-300 border-2 border-gray-300 text-xs sm:text-base md:text-lg"
               >
                 Cancel
               </button>
