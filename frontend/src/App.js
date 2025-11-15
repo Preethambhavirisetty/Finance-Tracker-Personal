@@ -272,6 +272,7 @@ const FinanceTracker = () => {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-white p-8" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
+        {API_URL}
         <div className="max-w-md mx-auto">
           <div className="text-center mb-12">
             <DollarSign className="w-20 h-20 text-gray-900 mx-auto mb-4" />
