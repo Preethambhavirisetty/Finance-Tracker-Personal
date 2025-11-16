@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DollarSign, TrendingUp, PieChart, Wallet, Tag, FileText, CheckCircle, ArrowRight, Play, X } from 'lucide-react';
+import { DollarSign, TrendingUp, PieChart, Wallet, Tag, FileText, Zap, Feather, Wind, ArrowRight, Play, X } from 'lucide-react';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const LandingPage = () => {
     {
       icon: <Wallet className="w-8 h-8 md:w-10 md:h-10" />,
       title: "Multiple Accounts",
-      description: "Manage multiple bank accounts, credit cards, and cash with auto-balance tracking"
+      description: "Manage multiple bank accounts, credit cards, and cash with real-time balance tracking"
     },
     {
       icon: <TrendingUp className="w-8 h-8 md:w-10 md:h-10" />,
@@ -39,186 +39,253 @@ const LandingPage = () => {
     }
   ];
 
-  const benefits = [
-    "📊 Real-time financial insights",
-    "🔒 Secure session-based authentication",
-    "📱 Fully responsive (mobile, tablet, desktop)",
-    "🎨 Beautiful, modern UI with dark mode support",
-    "🔍 Advanced search and filtering",
-    "💾 Automatic data backup"
+  const highlights = [
+    {
+      icon: <Feather className="w-6 h-6" />,
+      title: "Lightweight",
+      description: "Fast loading, minimal resources, optimized performance"
+    },
+    {
+      icon: <Wind className="w-6 h-6" />,
+      title: "Flexible",
+      description: "Adapts to your workflow, customizable categories and tags"
+    },
+    {
+      icon: <Zap className="w-6 h-6" />,
+      title: "Instant",
+      description: "Real-time updates, no delays, responsive interface"
+    }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-blue-900 text-white overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-gray-100 text-gray-900 overflow-hidden">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-gray-100/20 via-transparent to-gray-100/20 pointer-events-none"></div>
+      
       {/* Hero Section */}
       <div className="relative">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob top-0 -left-20"></div>
-          <div className="absolute w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000 top-0 -right-20"></div>
-          <div className="absolute w-96 h-96 bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000 bottom-0 left-1/2"></div>
-        </div>
-
         {/* Content */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20 pb-16 sm:pb-24">
           {/* Header */}
           <div className="text-center mb-12 sm:mb-16">
             <div className="flex items-center justify-center mb-6 sm:mb-8">
-              <div className="bg-gradient-to-r from-blue-500 to-green-500 p-3 sm:p-4 rounded-2xl sm:rounded-3xl shadow-2xl transform hover:scale-110 transition-transform duration-300">
-                <DollarSign className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20" />
+              <div className="relative group">
+                {/* Glassmorphism container */}
+                <div className="bg-white/70 backdrop-blur-xl p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-200/50 transform group-hover:scale-105 transition-all duration-300">
+                  <DollarSign className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 text-gray-900" />
+                </div>
+                {/* Subtle glow effect */}
+                <div className="absolute inset-0 bg-gray-300/20 rounded-2xl sm:rounded-3xl blur-xl -z-10 group-hover:bg-gray-400/30 transition-all duration-300"></div>
               </div>
             </div>
             
-            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-green-400 to-blue-400 animate-gradient" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-3 sm:mb-4 text-gray-900" style={{ fontFamily: "'Playfair Display', serif", letterSpacing: '-0.02em' }}>
               Finance Tracker
             </h1>
             
-            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-300 mb-6 sm:mb-8 max-w-3xl mx-auto font-light">
-              Take control of your finances with intelligent tracking, budgeting, and insights
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 mb-2 sm:mb-3 max-w-2xl mx-auto font-light">
+              Lightweight. Flexible. Instant.
+            </p>
+            
+            <p className="text-sm sm:text-base md:text-lg text-gray-500 mb-8 sm:mb-12 max-w-3xl mx-auto">
+              A minimalist approach to personal finance management—fast, adaptable, and built for your workflow
             </p>
 
+            {/* Highlights */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto mb-10 sm:mb-14">
+              {highlights.map((highlight, index) => (
+                <div
+                  key={index}
+                  className="bg-white/60 backdrop-blur-xl rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className="text-gray-900 mb-3 flex justify-center">
+                    {highlight.icon}
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2">{highlight.title}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">{highlight.description}</p>
+                </div>
+              ))}
+            </div>
+
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-8 sm:mb-12">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
               <button
                 onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
-                className="w-full sm:w-auto px-6 sm:px-8 md:px-10 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg md:text-xl hover:from-green-600 hover:to-blue-600 transform hover:scale-105 transition-all duration-300 shadow-2xl flex items-center justify-center gap-2 sm:gap-3"
+                className="group w-full sm:w-auto px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 bg-gray-900 text-white rounded-xl font-semibold text-sm sm:text-base md:text-lg hover:bg-gray-800 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl flex items-center justify-center gap-2"
               >
                 Get Started Free
-                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </button>
               
               <button
                 onClick={() => navigate('/auth', { state: { mode: 'login' } })}
-                className="w-full sm:w-auto px-6 sm:px-8 md:px-10 py-3 sm:py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg md:text-xl hover:bg-white/20 border-2 border-white/30 transform hover:scale-105 transition-all duration-300"
+                className="w-full sm:w-auto px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 bg-white/70 backdrop-blur-xl text-gray-900 rounded-xl font-semibold text-sm sm:text-base md:text-lg hover:bg-white border border-gray-300 transform hover:scale-105 transition-all duration-300 shadow-lg"
               >
                 Login
               </button>
 
               <button
                 onClick={() => setShowVideo(true)}
-                className="w-full sm:w-auto px-6 sm:px-8 md:px-10 py-3 sm:py-4 bg-red-500/20 backdrop-blur-sm text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg md:text-xl hover:bg-red-500/30 border-2 border-red-500/50 transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3"
+                className="w-full sm:w-auto px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 bg-white/50 backdrop-blur-xl text-gray-900 rounded-xl font-semibold text-sm sm:text-base md:text-lg hover:bg-white/70 border border-gray-200 transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
               >
-                <Play className="w-5 h-5 sm:w-6 sm:h-6" />
+                <Play className="w-4 h-4 sm:w-5 sm:h-5" />
                 Watch Demo
               </button>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl mx-auto">
-              <div className="bg-white/10 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border border-white/20">
-                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-400">Free</p>
-                <p className="text-xs sm:text-sm md:text-base text-gray-300 mt-1">Always Free</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border border-white/20">
-                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-400">100%</p>
-                <p className="text-xs sm:text-sm md:text-base text-gray-300 mt-1">Secure</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border border-white/20">
-                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-purple-400">∞</p>
-                <p className="text-xs sm:text-sm md:text-base text-gray-300 mt-1">Unlimited</p>
-              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Features Section */}
-      <div className="bg-white/5 backdrop-blur-lg py-12 sm:py-16 md:py-20">
+      <div className="relative py-12 sm:py-16 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 sm:mb-12 md:mb-16" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Powerful Features
-          </h2>
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Everything You Need
+            </h2>
+            <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+              Simple, powerful tools for complete financial control
+            </p>
+          </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-white/20 hover:bg-white/20 transform hover:scale-105 transition-all duration-300 hover:shadow-2xl"
+                className="group bg-white/60 backdrop-blur-xl rounded-xl sm:rounded-2xl p-5 sm:p-6 md:p-8 border border-gray-200/50 hover:border-gray-300/80 transform hover:-translate-y-2 transition-all duration-300 shadow-lg hover:shadow-2xl"
               >
-                <div className="text-blue-400 mb-3 sm:mb-4">
+                <div className="text-gray-900 mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                   {feature.icon}
                 </div>
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3">{feature.title}</h3>
-                <p className="text-sm sm:text-base text-gray-300">{feature.description}</p>
+                <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 sm:mb-3 text-gray-900">{feature.title}</h3>
+                <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Benefits Section */}
-      <div className="py-12 sm:py-16 md:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 sm:mb-12 md:mb-16" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Why Choose Finance Tracker?
-          </h2>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
-            {benefits.map((benefit, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 sm:gap-4 bg-white/10 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border border-white/20 hover:bg-white/20 transition-all duration-300"
-              >
-                <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-green-400 flex-shrink-0" />
-                <span className="text-sm sm:text-base md:text-lg">{benefit}</span>
+      {/* Why Section */}
+      <div className="relative py-12 sm:py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white/70 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 border border-gray-200/50 shadow-2xl">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4 sm:mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Why Finance Tracker?
+            </h2>
+            <p className="text-sm sm:text-base md:text-lg text-center text-gray-600 mb-8 sm:mb-10 max-w-2xl mx-auto">
+              Built with a focus on performance, simplicity, and user experience
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl bg-gray-50/50 border border-gray-200/30">
+                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-gray-900 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Minimal Learning Curve</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">Intuitive interface designed for immediate productivity</p>
+                </div>
               </div>
-            ))}
+              
+              <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl bg-gray-50/50 border border-gray-200/30">
+                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-gray-900 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-1 text-sm sm:text-base">No Bloat</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">Only essential features, nothing unnecessary</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl bg-gray-50/50 border border-gray-200/30">
+                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-gray-900 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Fully Responsive</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">Works seamlessly on mobile, tablet, and desktop</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl bg-gray-50/50 border border-gray-200/30">
+                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-gray-900 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Privacy First</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">Your data stays secure with session-based authentication</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Final CTA */}
-      <div className="bg-gradient-to-r from-blue-500/20 to-green-500/20 backdrop-blur-lg py-12 sm:py-16 md:py-20 border-y border-white/20">
+      <div className="relative py-16 sm:py-20 md:py-24">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Start Your Financial Journey Today
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+            Start Tracking Today
           </h2>
-          <p className="text-base sm:text-lg md:text-xl text-gray-300 mb-6 sm:mb-8">
-            Join thousands of users who have taken control of their finances
+          <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-8 sm:mb-10 max-w-2xl mx-auto">
+            Free forever. No credit card required. Start managing your finances in seconds.
           </p>
           <button
             onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
-            className="px-8 sm:px-10 md:px-12 py-3 sm:py-4 md:py-5 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg md:text-xl hover:from-green-600 hover:to-blue-600 transform hover:scale-105 transition-all duration-300 shadow-2xl"
+            className="group px-8 sm:px-10 md:px-12 py-3 sm:py-4 bg-gray-900 text-white rounded-xl font-bold text-sm sm:text-base md:text-lg hover:bg-gray-800 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl inline-flex items-center gap-2"
           >
             Create Free Account
+            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="py-6 sm:py-8 text-center text-xs sm:text-sm text-gray-400">
-        <p>© 2024 Finance Tracker. Built with ❤️ for better financial management.</p>
+      <div className="border-t border-gray-200 py-6 sm:py-8 text-center">
+        <p className="text-xs sm:text-sm text-gray-500">
+          © 2024 Finance Tracker. Lightweight financial management for everyone.
+        </p>
       </div>
 
       {/* Video Modal */}
       {showVideo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="relative bg-gray-900 rounded-2xl shadow-2xl max-w-4xl w-full border-2 border-white/20">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full border border-gray-200">
             <button
               onClick={() => setShowVideo(false)}
-              className="absolute -top-4 -right-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors z-10"
+              className="absolute -top-3 -right-3 bg-gray-900 hover:bg-gray-800 text-white p-2 rounded-full shadow-lg transition-colors z-10"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
             
-            <div className="p-4 sm:p-6">
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-center">Finance Tracker Demo</h3>
+            <div className="p-5 sm:p-6 md:p-8">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-center text-gray-900">Finance Tracker Demo</h3>
               
               {/* Video Placeholder - Replace with actual video */}
-              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl aspect-video flex items-center justify-center border-2 border-white/10">
+              <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl aspect-video flex items-center justify-center border border-gray-300">
                 <div className="text-center p-6 sm:p-8">
-                  <Play className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-blue-400 mx-auto mb-4 sm:mb-6" />
-                  <p className="text-base sm:text-lg md:text-xl text-gray-300 mb-2 sm:mb-3">Demo Video Coming Soon!</p>
-                  <p className="text-xs sm:text-sm md:text-base text-gray-400">
-                    This will showcase:
+                  <Play className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-gray-900 mx-auto mb-4 sm:mb-6" />
+                  <p className="text-base sm:text-lg md:text-xl text-gray-900 font-semibold mb-2 sm:mb-3">Demo Video Coming Soon!</p>
+                  <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-3 sm:mb-4">
+                    See how Finance Tracker streamlines your financial workflow
                   </p>
-                  <ul className="text-xs sm:text-sm md:text-base text-gray-400 mt-3 sm:mt-4 space-y-1 sm:space-y-2 text-left max-w-md mx-auto">
-                    <li>• Creating and managing transactions</li>
-                    <li>• Setting up categories and tags</li>
-                    <li>• Managing multiple accounts</li>
-                    <li>• Setting monthly budgets</li>
-                    <li>• Searching and filtering</li>
-                    <li>• Uploading receipt documents</li>
+                  <ul className="text-xs sm:text-sm text-gray-700 space-y-1.5 sm:space-y-2 text-left max-w-md mx-auto bg-white/50 rounded-lg p-4 sm:p-5 border border-gray-200">
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-gray-900 rounded-full"></div>
+                      Creating and managing transactions
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-gray-900 rounded-full"></div>
+                      Setting up categories and tags
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-gray-900 rounded-full"></div>
+                      Managing multiple accounts
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-gray-900 rounded-full"></div>
+                      Setting monthly budgets
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-gray-900 rounded-full"></div>
+                      Advanced search and filtering
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-gray-900 rounded-full"></div>
+                      Uploading receipt documents
+                    </li>
                   </ul>
                   {/* 
                   To add a real video, replace this div with:
