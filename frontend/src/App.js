@@ -6,6 +6,7 @@ import AuthForm from './components/auth/AuthForm';
 import ProfileSelection from './components/profile/ProfileSelection';
 import Dashboard from './components/dashboard/Dashboard';
 import Settings from './components/settings/Settings';
+import AllTransactions from './components/transactions/AllTransactions';
 
 const AuthRedirect = () => {
   const { isAuthenticated, authLoading } = useAuth();
@@ -48,6 +49,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/transactions/:profileId"
+            element={
+              <ProtectedRoute>
+                <AllTransactions />
               </ProtectedRoute>
             }
           />
