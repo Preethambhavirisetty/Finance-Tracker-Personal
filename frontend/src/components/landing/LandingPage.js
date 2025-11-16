@@ -58,7 +58,7 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-gray-100 text-gray-900 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-gray-200 text-gray-900 overflow-hidden">
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-tr from-gray-100/20 via-transparent to-gray-100/20 pointer-events-none"></div>
       

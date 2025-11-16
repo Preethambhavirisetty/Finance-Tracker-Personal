@@ -1161,13 +1161,44 @@ def upload_document(transaction_id):
         filename = secure_filename(data.get('filename'))
         file_type = data.get('file_type', 'application/octet-stream')
         
-        # Calculate file size from base64
-        file_size = len(base64.b64decode(file_data.split(',')[1] if ',' in file_data else file_data))
+        # Validate file_data format (must be base64 data URI)
+        if not file_data.startswith('data:'):
+            return jsonify({'error': 'Invalid file data format'}), 400
+        
+        # Validate filename
+        if not filename or len(filename) > 255:
+            return jsonify({'error': 'Invalid filename'}), 400
+        
+        # Validate file type (allow only safe types)
+        allowed_types = [
+            'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+            'application/pdf', 
+            'application/msword', 
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ]
+        if file_type not in allowed_types:
+            return jsonify({'error': f'File type not allowed. Allowed types: images, PDF, DOC, DOCX'}), 400
+        
+        try:
+            # Extract base64 data and decode to validate
+            base64_data = file_data.split(',')[1] if ',' in file_data else file_data
+            decoded_data = base64.b64decode(base64_data)
+            file_size = len(decoded_data)
+        except Exception:
+            return jsonify({'error': 'Invalid base64 data'}), 400
         
         # Check file size (3MB max)
         max_size = 3 * 1024 * 1024  # 3MB in bytes
         if file_size > max_size:
-            return jsonify({'error': f'File too large. Maximum size is 3MB'}), 400
+            return jsonify({'error': f'File too large. Maximum size is 3MB. Your file: {file_size / (1024*1024):.2f}MB'}), 400
+        
+        if file_size == 0:
+            return jsonify({'error': 'File is empty'}), 400
+        
+        # Check if user already has too many documents for this transaction (limit to 5)
+        existing_docs = TransactionDocument.query.filter_by(transaction_id=transaction_id).count()
+        if existing_docs >= 5:
+            return jsonify({'error': 'Maximum 5 documents per transaction'}), 400
         
         # Create document record
         document = TransactionDocument(
@@ -1181,8 +1212,12 @@ def upload_document(transaction_id):
         db.session.add(document)
         db.session.commit()
         
-        logger.info(f"Document uploaded: {filename} for transaction {transaction_id}")
+        logger.info(f"Document uploaded: {filename} ({file_size} bytes) for transaction {transaction_id} by user {user.id}")
         return jsonify(document.to_dict()), 201
+    except ValueError as e:
+        db.session.rollback()
+        logger.error(f"Validation error uploading document: {str(e)}")
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error uploading document: {str(e)}")
@@ -1201,7 +1236,14 @@ def get_document_data(document_id):
         ).first()
         
         if not document:
-            return jsonify({'error': 'Document not found'}), 404
+            return jsonify({'error': 'Document not found or access denied'}), 404
+        
+        # Validate file_data before sending
+        if not document.file_data or not document.file_data.startswith('data:'):
+            logger.error(f"Invalid file data for document {document_id}")
+            return jsonify({'error': 'Document data is corrupted'}), 500
+        
+        logger.info(f"Document accessed: {document.filename} by user {user.id}")
         
         return jsonify({
             'id': document.id,
@@ -1211,7 +1253,7 @@ def get_document_data(document_id):
             'file_size': document.file_size
         }), 200
     except Exception as e:
-        logger.error(f"Error fetching document: {str(e)}")
+        logger.error(f"Error fetching document {document_id}: {str(e)}")
         return jsonify({'error': 'Failed to fetch document'}), 500
 
 @app.route('/api/documents/<int:document_id>', methods=['DELETE'])
