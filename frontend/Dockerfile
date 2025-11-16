@@ -17,7 +17,11 @@ COPY . .
 ARG REACT_APP_API_URL=http://localhost:5001
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
 
-# Build the app
+# Build argument for memory limit (prevents build freezing)
+ARG NODE_OPTIONS="--max_old_space_size=512"
+ENV NODE_OPTIONS=$NODE_OPTIONS
+
+# Build the app with memory limits
 RUN npm run build
 
 # Stage 2: Serve with nginx

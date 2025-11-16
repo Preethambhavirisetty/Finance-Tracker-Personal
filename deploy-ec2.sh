@@ -109,17 +109,54 @@ if [ -d .git ]; then
     git pull origin main || print_warning "Could not pull from git. Continuing with local code..."
 fi
 
-# Step 5: Stop existing containers (if any)
+# Step 5: Check and create swap space if needed (prevents freezing)
+print_info "Checking swap space..."
+SWAP_SIZE=$(free -m | awk '/^Swap:/ {print $2}')
+if [ "$SWAP_SIZE" -lt 512 ]; then
+    print_warning "Low/no swap space detected. Creating 1GB swap file..."
+    if [ ! -f /swapfile ]; then
+        sudo fallocate -l 1G /swapfile 2>/dev/null || sudo dd if=/dev/zero of=/swapfile bs=1M count=1024 status=progress
+        sudo chmod 600 /swapfile
+        sudo mkswap /swapfile
+        sudo swapon /swapfile
+        print_info "Swap file created and activated!"
+    else
+        sudo swapon /swapfile 2>/dev/null || print_info "Swap already active"
+    fi
+fi
+
+# Step 6: Stop existing containers (if any)
 if [ "$(docker ps -aq -f name=finance-tracker)" ]; then
     print_info "Stopping existing containers..."
     docker compose down 2>/dev/null || docker-compose down
 fi
 
-# Step 6: Build images
-print_info "Building Docker images (this may take a few minutes)..."
-docker compose build 2>/dev/null || docker-compose build
+# Step 7: Clean up Docker to free memory
+print_info "Cleaning up Docker (freeing memory)..."
+docker system prune -af --volumes > /dev/null 2>&1 || true
 
-# Step 7: Start services
+# Step 8: Build images SEQUENTIALLY (prevents memory overload)
+print_info "Building Docker images sequentially (this prevents freezing)..."
+
+# Build backend first (smaller, faster)
+print_info "Building backend (1/2)..."
+docker compose build --no-cache backend 2>/dev/null || docker-compose build --no-cache backend
+
+# Small pause to let system recover
+sleep 5
+
+# Build frontend (memory intensive, build with limits)
+print_info "Building frontend (2/2) - this may take 5-10 minutes..."
+print_warning "⚠️  Frontend build is memory-intensive. System may slow down temporarily."
+
+# Build frontend with memory limits
+export NODE_OPTIONS="--max_old_space_size=512"
+docker compose build --no-cache --build-arg NODE_OPTIONS="--max_old_space_size=512" frontend 2>/dev/null || \
+    docker-compose build --no-cache --build-arg NODE_OPTIONS="--max_old_space_size=512" frontend
+
+print_info "All images built successfully!"
+
+# Step 9: Start services
 print_info "Starting services..."
 docker compose up -d 2>/dev/null || docker-compose up -d
 
