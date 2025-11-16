@@ -58,9 +58,21 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-gray-200 text-gray-900 overflow-hidden">
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-gray-100/20 via-transparent to-gray-100/20 pointer-events-none"></div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-gray-200 text-gray-900 overflow-hidden relative">
+      {/* Animated Glassmorphism Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Large blurred circles */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-purple-200/40 to-blue-200/40 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-pink-200/40 to-purple-200/40 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-gradient-to-br from-blue-200/40 to-cyan-200/40 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-br from-yellow-200/30 to-orange-200/30 rounded-full blur-3xl animate-blob animation-delay-6000"></div>
+        
+        {/* Mesh gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-white/40 via-transparent to-white/40 backdrop-blur-3xl"></div>
+        
+        {/* Glass texture */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-white/10"></div>
+      </div>
       
       {/* Hero Section */}
       <div className="relative">

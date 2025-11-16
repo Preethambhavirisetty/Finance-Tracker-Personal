@@ -274,7 +274,7 @@ class Transaction(db.Model):
 class TransactionDocument(db.Model):
     __tablename__ = 'transaction_documents'
     id = db.Column(db.Integer, primary_key=True)
-    transaction_id = db.Column(db.Integer, db.ForeignKey('transactions.id'), nullable=False, index=True)
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transactions.id', ondelete='CASCADE'), nullable=False, index=True)
     filename = db.Column(db.String(255), nullable=False)
     file_data = db.Column(db.Text, nullable=False)  # Base64 encoded
     file_type = db.Column(db.String(50), nullable=False)
@@ -617,6 +617,9 @@ def delete_transaction(transaction_id):
         if not transaction:
             return jsonify({'error': 'Transaction not found or access denied'}), 404
 
+        # Delete associated documents first (if CASCADE doesn't work)
+        TransactionDocument.query.filter_by(transaction_id=transaction_id).delete()
+
         # Update account balance if account is specified
         if transaction.account_id:
             account = Account.query.get(transaction.account_id)
@@ -630,7 +633,7 @@ def delete_transaction(transaction_id):
         db.session.delete(transaction)
         db.session.commit()
 
-        logger.info(f"Transaction deleted: {transaction_id} by user {user.id}")
+        logger.info(f"Transaction deleted: {transaction_id} (with documents) by user {user.id}")
         return jsonify({'message': 'Transaction deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
