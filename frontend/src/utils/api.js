@@ -259,6 +259,32 @@ export const api = {
       credentials: 'include'
     });
     return handleResponse(response);
+  },
+
+  // Documents
+  uploadDocument: async (transactionId, fileData, filename, fileType) => {
+    const response = await fetch(`${API_URL}/transactions/${transactionId}/documents`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ file_data: fileData, filename, file_type: fileType })
+    });
+    return handleResponse(response);
+  },
+
+  getDocumentData: async (documentId) => {
+    const response = await fetch(`${API_URL}/documents/${documentId}/data`, {
+      credentials: 'include'
+    });
+    return handleResponse(response);
+  },
+
+  deleteDocument: async (documentId) => {
+    const response = await fetch(`${API_URL}/documents/${documentId}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    return handleResponse(response);
   }
 };
 

@@ -1,9 +1,58 @@
-import React from 'react';
-import { Calendar, DollarSign, Tag, Wallet, FileText, TrendingUp, TrendingDown } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, DollarSign, Tag, Wallet, FileText, TrendingUp, TrendingDown, Download, Eye, X as XIcon } from 'lucide-react';
 import Modal from '../common/Modal';
+import { api, APIError } from '../../utils/api';
 
-const TransactionDetailModal = ({ transaction, isOpen, onClose }) => {
+const TransactionDetailModal = ({ transaction, isOpen, onClose, onDocumentDeleted }) => {
+  const [deletingDoc, setDeletingDoc] = useState(null);
+  
   if (!transaction) return null;
+
+  const handleDownload = async (doc) => {
+    try {
+      const data = await api.getDocumentData(doc.id);
+      const link = document.createElement('a');
+      link.href = data.file_data;
+      link.download = doc.filename;
+      link.click();
+    } catch (error) {
+      alert(error instanceof APIError ? error.message : 'Failed to download document');
+    }
+  };
+
+  const handlePreview = async (doc) => {
+    try {
+      const data = await api.getDocumentData(doc.id);
+      window.open(data.file_data, '_blank');
+    } catch (error) {
+      alert(error instanceof APIError ? error.message : 'Failed to preview document');
+    }
+  };
+
+  const handleDelete = async (doc) => {
+    if (!window.confirm(`Delete ${doc.filename}?`)) return;
+    
+    setDeletingDoc(doc.id);
+    try {
+      await api.deleteDocument(doc.id);
+      if (onDocumentDeleted) {
+        onDocumentDeleted(doc.id);
+      }
+      alert('Document deleted successfully');
+    } catch (error) {
+      alert(error instanceof APIError ? error.message : 'Failed to delete document');
+    } finally {
+      setDeletingDoc(null);
+    }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Transaction Details">
@@ -105,6 +154,55 @@ const TransactionDetailModal = ({ transaction, isOpen, onClose }) => {
                   >
                     {tag.name}
                   </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Documents */}
+        {transaction.documents && transaction.documents.length > 0 && (
+          <div className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border border-gray-200 rounded-lg sm:rounded-xl">
+            <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs sm:text-sm text-gray-600 mb-2">Attached Documents</p>
+              <div className="space-y-2">
+                {transaction.documents.map(doc => (
+                  <div
+                    key={doc.id}
+                    className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-200"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{doc.filename}</p>
+                      <p className="text-xs text-gray-500">{formatFileSize(doc.file_size)}</p>
+                    </div>
+                    <div className="flex items-center gap-1 sm:gap-2 ml-2">
+                      <button
+                        onClick={() => handlePreview(doc)}
+                        className="p-1 sm:p-1.5 hover:bg-blue-100 rounded transition-colors"
+                        title="Preview"
+                      >
+                        <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                      </button>
+                      <button
+                        onClick={() => handleDownload(doc)}
+                        className="p-1 sm:p-1.5 hover:bg-green-100 rounded transition-colors"
+                        title="Download"
+                      >
+                        <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(doc)}
+                        disabled={deletingDoc === doc.id}
+                        className="p-1 sm:p-1.5 hover:bg-red-100 rounded transition-colors disabled:opacity-50"
+                        title="Delete"
+                      >
+                        <XIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" />
+                      </button>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

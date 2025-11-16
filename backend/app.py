@@ -2,9 +2,11 @@ from flask import Flask, request, jsonify, session, g
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 import os
 import logging
+import base64
 
 # Import authentication utilities
 from auth import (
@@ -251,6 +253,9 @@ class Transaction(db.Model):
     tags = db.relationship('Tag', secondary=transaction_tags, lazy='subquery', backref=db.backref('transactions', lazy=True))
 
     def to_dict(self):
+        # Get documents for this transaction
+        documents = TransactionDocument.query.filter_by(transaction_id=self.id).all()
+        
         return {
             'id': self.id,
             'profile_id': self.profile_id,
@@ -262,7 +267,28 @@ class Transaction(db.Model):
             'description': self.description,
             'date': self.date.isoformat(),
             'tags': [tag.to_dict() for tag in self.tags],
+            'documents': [doc.to_dict() for doc in documents],
             'created_at': self.created_at.isoformat()
+        }
+
+class TransactionDocument(db.Model):
+    __tablename__ = 'transaction_documents'
+    id = db.Column(db.Integer, primary_key=True)
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transactions.id'), nullable=False, index=True)
+    filename = db.Column(db.String(255), nullable=False)
+    file_data = db.Column(db.Text, nullable=False)  # Base64 encoded
+    file_type = db.Column(db.String(50), nullable=False)
+    file_size = db.Column(db.Integer, nullable=False)  # in bytes
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'transaction_id': self.transaction_id,
+            'filename': self.filename,
+            'file_type': self.file_type,
+            'file_size': self.file_size,
+            'uploaded_at': self.uploaded_at.isoformat()
         }
 
 # Make models available to auth decorators
@@ -1109,6 +1135,109 @@ def delete_budget(budget_id):
         db.session.rollback()
         logger.error(f"Error deleting budget: {str(e)}")
         return jsonify({'error': 'Failed to delete budget'}), 500
+
+# ===== Document Management =====
+
+@app.route('/api/transactions/<int:transaction_id>/documents', methods=['POST'])
+@require_auth
+def upload_document(transaction_id):
+    user = get_current_user(User)
+    
+    try:
+        # Verify transaction ownership
+        transaction = db.session.query(Transaction).join(Profile).filter(
+            Transaction.id == transaction_id,
+            Profile.user_id == user.id
+        ).first()
+        
+        if not transaction:
+            return jsonify({'error': 'Transaction not found'}), 404
+        
+        data = request.get_json()
+        if not data or not data.get('file_data') or not data.get('filename'):
+            return jsonify({'error': 'File data and filename required'}), 400
+        
+        file_data = data.get('file_data')
+        filename = secure_filename(data.get('filename'))
+        file_type = data.get('file_type', 'application/octet-stream')
+        
+        # Calculate file size from base64
+        file_size = len(base64.b64decode(file_data.split(',')[1] if ',' in file_data else file_data))
+        
+        # Check file size (3MB max)
+        max_size = 3 * 1024 * 1024  # 3MB in bytes
+        if file_size > max_size:
+            return jsonify({'error': f'File too large. Maximum size is 3MB'}), 400
+        
+        # Create document record
+        document = TransactionDocument(
+            transaction_id=transaction_id,
+            filename=filename,
+            file_data=file_data,
+            file_type=file_type,
+            file_size=file_size
+        )
+        
+        db.session.add(document)
+        db.session.commit()
+        
+        logger.info(f"Document uploaded: {filename} for transaction {transaction_id}")
+        return jsonify(document.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error uploading document: {str(e)}")
+        return jsonify({'error': 'Failed to upload document'}), 500
+
+@app.route('/api/documents/<int:document_id>/data', methods=['GET'])
+@require_auth
+def get_document_data(document_id):
+    user = get_current_user(User)
+    
+    try:
+        # Verify document ownership through transaction
+        document = db.session.query(TransactionDocument).join(Transaction).join(Profile).filter(
+            TransactionDocument.id == document_id,
+            Profile.user_id == user.id
+        ).first()
+        
+        if not document:
+            return jsonify({'error': 'Document not found'}), 404
+        
+        return jsonify({
+            'id': document.id,
+            'filename': document.filename,
+            'file_data': document.file_data,
+            'file_type': document.file_type,
+            'file_size': document.file_size
+        }), 200
+    except Exception as e:
+        logger.error(f"Error fetching document: {str(e)}")
+        return jsonify({'error': 'Failed to fetch document'}), 500
+
+@app.route('/api/documents/<int:document_id>', methods=['DELETE'])
+@require_auth
+def delete_document(document_id):
+    user = get_current_user(User)
+    
+    try:
+        # Verify document ownership through transaction
+        document = db.session.query(TransactionDocument).join(Transaction).join(Profile).filter(
+            TransactionDocument.id == document_id,
+            Profile.user_id == user.id
+        ).first()
+        
+        if not document:
+            return jsonify({'error': 'Document not found'}), 404
+        
+        db.session.delete(document)
+        db.session.commit()
+        
+        logger.info(f"Document deleted: {document_id}")
+        return jsonify({'message': 'Document deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting document: {str(e)}")
+        return jsonify({'error': 'Failed to delete document'}), 500
 
 # Error handlers
 @app.errorhandler(404)

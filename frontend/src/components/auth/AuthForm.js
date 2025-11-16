@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, LogIn, AlertCircle, DollarSign } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { User, Mail, Lock, LogIn, AlertCircle, DollarSign, ArrowLeft } from 'lucide-react';
 import { api, APIError } from '../../utils/api';
 import { validateEmail, validateUsername, validatePassword, getPasswordStrength } from '../../utils/validation';
 import { useAuth } from '../../context/AuthContext';
 
 const AuthForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
-  const [showLogin, setShowLogin] = useState(true);
+  const [showLogin, setShowLogin] = useState(location.state?.mode !== 'signup');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authForm, setAuthForm] = useState({
     username: '',
