@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { User, LogOut, PlusCircle } from 'lucide-react';
+import { User, LogOut, PlusCircle, Settings as SettingsIcon } from 'lucide-react';
 import { api, APIError } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import StatsCards from './StatsCards';
@@ -118,6 +118,13 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 w-full lg:w-auto">
+            <button
+              onClick={() => navigate(`/settings/${profileId}`)}
+              className="px-3 sm:px-5 md:px-6 py-1.5 sm:py-2.5 md:py-3 bg-blue-600 text-white rounded-lg sm:rounded-2xl font-semibold hover:bg-blue-700 transition-all duration-300 border-2 border-blue-600 flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-base"
+            >
+              <SettingsIcon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">Settings</span>
+            </button>
             <button
               onClick={() => navigate('/profiles')}
               className="px-3 sm:px-5 md:px-6 py-1.5 sm:py-2.5 md:py-3 bg-white text-gray-900 rounded-lg sm:rounded-2xl font-semibold hover:bg-gray-50 transition-all duration-300 border-2 border-gray-300 flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-base"

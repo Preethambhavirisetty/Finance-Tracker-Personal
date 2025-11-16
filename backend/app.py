@@ -100,26 +100,168 @@ class Profile(db.Model):
             'createdAt': self.created_at.isoformat()
         }
 
-class Transaction(db.Model):
-    __tablename__ = 'transactions'
+# New Models for Enhanced Features
+
+class Category(db.Model):
+    __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
     profile_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), nullable=False, index=True)
+    name = db.Column(db.String(100), nullable=False)
     type = db.Column(db.String(20), nullable=False, index=True)  # 'income' or 'expense'
-    amount = db.Column(db.Float, nullable=False)
-    category = db.Column(db.String(100), nullable=False, index=True)
-    description = db.Column(db.Text)
-    date = db.Column(db.Date, nullable=False, index=True)
+    icon = db.Column(db.String(50), default='📁')
+    color = db.Column(db.String(7), default='#6B7280')
+    is_default = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
         return {
             'id': self.id,
             'profile_id': self.profile_id,
+            'name': self.name,
+            'type': self.type,
+            'icon': self.icon,
+            'color': self.color,
+            'is_default': self.is_default,
+            'created_at': self.created_at.isoformat()
+        }
+
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    id = db.Column(db.Integer, primary_key=True)
+    profile_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), nullable=False, index=True)
+    name = db.Column(db.String(50), nullable=False)
+    color = db.Column(db.String(7), default='#3B82F6')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'profile_id': self.profile_id,
+            'name': self.name,
+            'color': self.color,
+            'created_at': self.created_at.isoformat()
+        }
+
+class Account(db.Model):
+    __tablename__ = 'accounts'
+    id = db.Column(db.Integer, primary_key=True)
+    profile_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), nullable=False, index=True)
+    name = db.Column(db.String(100), nullable=False)
+    type = db.Column(db.String(50), nullable=False)  # 'cash', 'bank', 'credit_card', 'investment'
+    balance = db.Column(db.Float, default=0)
+    currency = db.Column(db.String(3), default='USD')
+    icon = db.Column(db.String(50), default='💰')
+    color = db.Column(db.String(7), default='#10B981')
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'profile_id': self.profile_id,
+            'name': self.name,
+            'type': self.type,
+            'balance': self.balance,
+            'currency': self.currency,
+            'icon': self.icon,
+            'color': self.color,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat()
+        }
+
+class Budget(db.Model):
+    __tablename__ = 'budgets'
+    id = db.Column(db.Integer, primary_key=True)
+    profile_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), nullable=False, index=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True, index=True)
+    amount = db.Column(db.Float, nullable=False)
+    period = db.Column(db.String(20), default='monthly')  # 'monthly', 'yearly'
+    month = db.Column(db.Integer, nullable=True)  # 1-12
+    year = db.Column(db.Integer, nullable=False)
+    alert_threshold = db.Column(db.Integer, default=80)  # Alert at 80% usage
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        spent = 0
+        if self.category_id:
+            # Calculate spent for this category
+            category = Category.query.get(self.category_id)
+            if category:
+                query = Transaction.query.filter_by(
+                    profile_id=self.profile_id,
+                    category=category.name,
+                    type='expense'
+                )
+                if self.month:
+                    query = query.filter(
+                        db.extract('month', Transaction.date) == self.month,
+                        db.extract('year', Transaction.date) == self.year
+                    )
+                spent = sum(t.amount for t in query.all())
+        else:
+            # Total budget - all expenses
+            query = Transaction.query.filter_by(
+                profile_id=self.profile_id,
+                type='expense'
+            )
+            if self.month:
+                query = query.filter(
+                    db.extract('month', Transaction.date) == self.month,
+                    db.extract('year', Transaction.date) == self.year
+                )
+            spent = sum(t.amount for t in query.all())
+            
+        return {
+            'id': self.id,
+            'profile_id': self.profile_id,
+            'category_id': self.category_id,
+            'amount': self.amount,
+            'spent': spent,
+            'remaining': self.amount - spent,
+            'percentage': (spent / self.amount * 100) if self.amount > 0 else 0,
+            'period': self.period,
+            'month': self.month,
+            'year': self.year,
+            'alert_threshold': self.alert_threshold,
+            'is_exceeded': spent > self.amount,
+            'is_warning': (spent / self.amount * 100) >= self.alert_threshold if self.amount > 0 else False,
+            'created_at': self.created_at.isoformat()
+        }
+
+# Association table for transaction tags (many-to-many)
+transaction_tags = db.Table('transaction_tags',
+    db.Column('transaction_id', db.Integer, db.ForeignKey('transactions.id'), primary_key=True),
+    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'), primary_key=True)
+)
+
+class Transaction(db.Model):
+    __tablename__ = 'transactions'
+    id = db.Column(db.Integer, primary_key=True)
+    profile_id = db.Column(db.Integer, db.ForeignKey('profiles.id'), nullable=False, index=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True, index=True)
+    account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True, index=True)
+    type = db.Column(db.String(20), nullable=False, index=True)  # 'income' or 'expense'
+    amount = db.Column(db.Float, nullable=False)
+    category = db.Column(db.String(100), nullable=False, index=True)  # Kept for backward compatibility
+    description = db.Column(db.Text)
+    date = db.Column(db.Date, nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    tags = db.relationship('Tag', secondary=transaction_tags, lazy='subquery', backref=db.backref('transactions', lazy=True))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'profile_id': self.profile_id,
+            'category_id': self.category_id,
+            'account_id': self.account_id,
             'type': self.type,
             'amount': self.amount,
             'category': self.category,
             'description': self.description,
             'date': self.date.isoformat(),
+            'tags': [tag.to_dict() for tag in self.tags],
             'created_at': self.created_at.isoformat()
         }
 
@@ -401,9 +543,28 @@ def create_transaction(profile_id):
             amount=amount,
             category=category,
             description=description,
-            date=date
+            date=date,
+            category_id=data.get('category_id'),
+            account_id=data.get('account_id')
         )
+        
+        # Handle tags (many-to-many relationship)
+        tag_ids = data.get('tag_ids', [])
+        if tag_ids:
+            tags = Tag.query.filter(Tag.id.in_(tag_ids), Tag.profile_id == profile_id).all()
+            new_transaction.tags = tags
+        
         db.session.add(new_transaction)
+        
+        # Update account balance if account is specified
+        if new_transaction.account_id:
+            account = Account.query.get(new_transaction.account_id)
+            if account and account.profile_id == profile_id:
+                if transaction_type == 'income':
+                    account.balance += amount
+                else:
+                    account.balance -= amount
+        
         db.session.commit()
 
         logger.info(f"Transaction created: {transaction_type} ${amount} for profile {profile_id}")
@@ -429,6 +590,16 @@ def delete_transaction(transaction_id):
         
         if not transaction:
             return jsonify({'error': 'Transaction not found or access denied'}), 404
+
+        # Update account balance if account is specified
+        if transaction.account_id:
+            account = Account.query.get(transaction.account_id)
+            if account:
+                # Reverse the transaction
+                if transaction.type == 'income':
+                    account.balance -= transaction.amount
+                else:
+                    account.balance += transaction.amount
 
         db.session.delete(transaction)
         db.session.commit()
@@ -496,6 +667,448 @@ def api_docs():
             }
         }
     }), 200
+
+# ===== Categories Management =====
+
+@app.route('/api/profiles/<int:profile_id>/categories', methods=['GET'])
+@require_auth
+def get_categories(profile_id):
+    user = get_current_user(User)
+    
+    try:
+        profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404
+        
+        categories = Category.query.filter_by(profile_id=profile_id).order_by(Category.name).all()
+        return jsonify([cat.to_dict() for cat in categories]), 200
+    except Exception as e:
+        logger.error(f"Error fetching categories: {str(e)}")
+        return jsonify({'error': 'Failed to fetch categories'}), 500
+
+@app.route('/api/profiles/<int:profile_id>/categories', methods=['POST'])
+@require_auth
+def create_category(profile_id):
+    user = get_current_user(User)
+    
+    try:
+        profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404
+        
+        data = request.get_json()
+        name = sanitize_input(data.get('name', ''))
+        cat_type = data.get('type', 'expense')
+        
+        if not name or len(name) < 2:
+            return jsonify({'error': 'Category name must be at least 2 characters'}), 400
+        
+        if cat_type not in ['income', 'expense']:
+            return jsonify({'error': 'Type must be income or expense'}), 400
+        
+        # Check if category already exists
+        existing = Category.query.filter_by(profile_id=profile_id, name=name, type=cat_type).first()
+        if existing:
+            return jsonify({'error': 'Category already exists'}), 400
+        
+        new_category = Category(
+            profile_id=profile_id,
+            name=name,
+            type=cat_type,
+            icon=data.get('icon', '📁'),
+            color=data.get('color', '#6B7280'),
+            is_default=data.get('is_default', False)
+        )
+        
+        db.session.add(new_category)
+        db.session.commit()
+        
+        logger.info(f"Category created: {name} for profile {profile_id}")
+        return jsonify(new_category.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating category: {str(e)}")
+        return jsonify({'error': 'Failed to create category'}), 500
+
+@app.route('/api/categories/<int:category_id>', methods=['PUT'])
+@require_auth
+def update_category(category_id):
+    user = get_current_user(User)
+    
+    try:
+        category = Category.query.get(category_id)
+        if not category:
+            return jsonify({'error': 'Category not found'}), 404
+        
+        profile = Profile.query.filter_by(id=category.profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        data = request.get_json()
+        
+        if 'name' in data:
+            category.name = sanitize_input(data['name'])
+        if 'icon' in data:
+            category.icon = data['icon']
+        if 'color' in data:
+            category.color = data['color']
+        
+        db.session.commit()
+        return jsonify(category.to_dict()), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error updating category: {str(e)}")
+        return jsonify({'error': 'Failed to update category'}), 500
+
+@app.route('/api/categories/<int:category_id>', methods=['DELETE'])
+@require_auth
+def delete_category(category_id):
+    user = get_current_user(User)
+    
+    try:
+        category = Category.query.get(category_id)
+        if not category:
+            return jsonify({'error': 'Category not found'}), 404
+        
+        profile = Profile.query.filter_by(id=category.profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        db.session.delete(category)
+        db.session.commit()
+        
+        logger.info(f"Category deleted: {category_id}")
+        return jsonify({'message': 'Category deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting category: {str(e)}")
+        return jsonify({'error': 'Failed to delete category'}), 500
+
+# ===== Tags Management =====
+
+@app.route('/api/profiles/<int:profile_id>/tags', methods=['GET'])
+@require_auth
+def get_tags(profile_id):
+    user = get_current_user(User)
+    
+    try:
+        profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404
+        
+        tags = Tag.query.filter_by(profile_id=profile_id).order_by(Tag.name).all()
+        return jsonify([tag.to_dict() for tag in tags]), 200
+    except Exception as e:
+        logger.error(f"Error fetching tags: {str(e)}")
+        return jsonify({'error': 'Failed to fetch tags'}), 500
+
+@app.route('/api/profiles/<int:profile_id>/tags', methods=['POST'])
+@require_auth
+def create_tag(profile_id):
+    user = get_current_user(User)
+    
+    try:
+        profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404
+        
+        data = request.get_json()
+        name = sanitize_input(data.get('name', ''))
+        
+        if not name or len(name) < 2:
+            return jsonify({'error': 'Tag name must be at least 2 characters'}), 400
+        
+        # Check if tag already exists
+        existing = Tag.query.filter_by(profile_id=profile_id, name=name).first()
+        if existing:
+            return jsonify({'error': 'Tag already exists'}), 400
+        
+        new_tag = Tag(
+            profile_id=profile_id,
+            name=name,
+            color=data.get('color', '#3B82F6')
+        )
+        
+        db.session.add(new_tag)
+        db.session.commit()
+        
+        logger.info(f"Tag created: {name} for profile {profile_id}")
+        return jsonify(new_tag.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating tag: {str(e)}")
+        return jsonify({'error': 'Failed to create tag'}), 500
+
+@app.route('/api/tags/<int:tag_id>', methods=['DELETE'])
+@require_auth
+def delete_tag(tag_id):
+    user = get_current_user(User)
+    
+    try:
+        tag = Tag.query.get(tag_id)
+        if not tag:
+            return jsonify({'error': 'Tag not found'}), 404
+        
+        profile = Profile.query.filter_by(id=tag.profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        db.session.delete(tag)
+        db.session.commit()
+        
+        logger.info(f"Tag deleted: {tag_id}")
+        return jsonify({'message': 'Tag deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting tag: {str(e)}")
+        return jsonify({'error': 'Failed to delete tag'}), 500
+
+# ===== Accounts Management =====
+
+@app.route('/api/profiles/<int:profile_id>/accounts', methods=['GET'])
+@require_auth
+def get_accounts(profile_id):
+    user = get_current_user(User)
+    
+    try:
+        profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404
+        
+        accounts = Account.query.filter_by(profile_id=profile_id).order_by(Account.name).all()
+        return jsonify([acc.to_dict() for acc in accounts]), 200
+    except Exception as e:
+        logger.error(f"Error fetching accounts: {str(e)}")
+        return jsonify({'error': 'Failed to fetch accounts'}), 500
+
+@app.route('/api/profiles/<int:profile_id>/accounts', methods=['POST'])
+@require_auth
+def create_account(profile_id):
+    user = get_current_user(User)
+    
+    try:
+        profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404
+        
+        data = request.get_json()
+        name = sanitize_input(data.get('name', ''))
+        acc_type = data.get('type', 'cash')
+        
+        if not name or len(name) < 2:
+            return jsonify({'error': 'Account name must be at least 2 characters'}), 400
+        
+        if acc_type not in ['cash', 'bank', 'credit_card', 'investment', 'savings', 'other']:
+            return jsonify({'error': 'Invalid account type'}), 400
+        
+        new_account = Account(
+            profile_id=profile_id,
+            name=name,
+            type=acc_type,
+            balance=float(data.get('balance', 0)),
+            currency=data.get('currency', 'USD'),
+            icon=data.get('icon', '💰'),
+            color=data.get('color', '#10B981')
+        )
+        
+        db.session.add(new_account)
+        db.session.commit()
+        
+        logger.info(f"Account created: {name} for profile {profile_id}")
+        return jsonify(new_account.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating account: {str(e)}")
+        return jsonify({'error': 'Failed to create account'}), 500
+
+@app.route('/api/accounts/<int:account_id>', methods=['PUT'])
+@require_auth
+def update_account(account_id):
+    user = get_current_user(User)
+    
+    try:
+        account = Account.query.get(account_id)
+        if not account:
+            return jsonify({'error': 'Account not found'}), 404
+        
+        profile = Profile.query.filter_by(id=account.profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        data = request.get_json()
+        
+        if 'name' in data:
+            account.name = sanitize_input(data['name'])
+        if 'balance' in data:
+            account.balance = float(data['balance'])
+        if 'icon' in data:
+            account.icon = data['icon']
+        if 'color' in data:
+            account.color = data['color']
+        if 'is_active' in data:
+            account.is_active = data['is_active']
+        
+        db.session.commit()
+        return jsonify(account.to_dict()), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error updating account: {str(e)}")
+        return jsonify({'error': 'Failed to update account'}), 500
+
+@app.route('/api/accounts/<int:account_id>', methods=['DELETE'])
+@require_auth
+def delete_account(account_id):
+    user = get_current_user(User)
+    
+    try:
+        account = Account.query.get(account_id)
+        if not account:
+            return jsonify({'error': 'Account not found'}), 404
+        
+        profile = Profile.query.filter_by(id=account.profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        db.session.delete(account)
+        db.session.commit()
+        
+        logger.info(f"Account deleted: {account_id}")
+        return jsonify({'message': 'Account deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting account: {str(e)}")
+        return jsonify({'error': 'Failed to delete account'}), 500
+
+# ===== Budgets Management (Monthly Limits) =====
+
+@app.route('/api/profiles/<int:profile_id>/budgets', methods=['GET'])
+@require_auth
+def get_budgets(profile_id):
+    user = get_current_user(User)
+    
+    try:
+        profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404
+        
+        # Get budgets for current month by default
+        from datetime import datetime as dt
+        month = request.args.get('month', dt.now().month, type=int)
+        year = request.args.get('year', dt.now().year, type=int)
+        
+        budgets = Budget.query.filter_by(
+            profile_id=profile_id,
+            month=month,
+            year=year
+        ).all()
+        
+        return jsonify([budget.to_dict() for budget in budgets]), 200
+    except Exception as e:
+        logger.error(f"Error fetching budgets: {str(e)}")
+        return jsonify({'error': 'Failed to fetch budgets'}), 500
+
+@app.route('/api/profiles/<int:profile_id>/budgets', methods=['POST'])
+@require_auth
+def create_budget(profile_id):
+    user = get_current_user(User)
+    
+    try:
+        profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Profile not found'}), 404
+        
+        data = request.get_json()
+        amount = float(data.get('amount', 0))
+        
+        if amount <= 0:
+            return jsonify({'error': 'Budget amount must be greater than 0'}), 400
+        
+        from datetime import datetime as dt
+        month = data.get('month', dt.now().month)
+        year = data.get('year', dt.now().year)
+        
+        # Check if budget already exists
+        existing = Budget.query.filter_by(
+            profile_id=profile_id,
+            category_id=data.get('category_id'),
+            month=month,
+            year=year
+        ).first()
+        
+        if existing:
+            return jsonify({'error': 'Budget already exists for this period'}), 400
+        
+        new_budget = Budget(
+            profile_id=profile_id,
+            category_id=data.get('category_id'),
+            amount=amount,
+            period=data.get('period', 'monthly'),
+            month=month,
+            year=year,
+            alert_threshold=data.get('alert_threshold', 80)
+        )
+        
+        db.session.add(new_budget)
+        db.session.commit()
+        
+        logger.info(f"Budget created for profile {profile_id}, amount: {amount}")
+        return jsonify(new_budget.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating budget: {str(e)}")
+        return jsonify({'error': 'Failed to create budget'}), 500
+
+@app.route('/api/budgets/<int:budget_id>', methods=['PUT'])
+@require_auth
+def update_budget(budget_id):
+    user = get_current_user(User)
+    
+    try:
+        budget = Budget.query.get(budget_id)
+        if not budget:
+            return jsonify({'error': 'Budget not found'}), 404
+        
+        profile = Profile.query.filter_by(id=budget.profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        data = request.get_json()
+        
+        if 'amount' in data:
+            budget.amount = float(data['amount'])
+        if 'alert_threshold' in data:
+            budget.alert_threshold = int(data['alert_threshold'])
+        
+        db.session.commit()
+        return jsonify(budget.to_dict()), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error updating budget: {str(e)}")
+        return jsonify({'error': 'Failed to update budget'}), 500
+
+@app.route('/api/budgets/<int:budget_id>', methods=['DELETE'])
+@require_auth
+def delete_budget(budget_id):
+    user = get_current_user(User)
+    
+    try:
+        budget = Budget.query.get(budget_id)
+        if not budget:
+            return jsonify({'error': 'Budget not found'}), 404
+        
+        profile = Profile.query.filter_by(id=budget.profile_id, user_id=user.id).first()
+        if not profile:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        db.session.delete(budget)
+        db.session.commit()
+        
+        logger.info(f"Budget deleted: {budget_id}")
+        return jsonify({'message': 'Budget deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting budget: {str(e)}")
+        return jsonify({'error': 'Failed to delete budget'}), 500
 
 # Error handlers
 @app.errorhandler(404)

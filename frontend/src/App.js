@@ -5,6 +5,7 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import AuthForm from './components/auth/AuthForm';
 import ProfileSelection from './components/profile/ProfileSelection';
 import Dashboard from './components/dashboard/Dashboard';
+import Settings from './components/settings/Settings';
 
 const AuthRedirect = () => {
   const { isAuthenticated, authLoading } = useAuth();
@@ -39,6 +40,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings/:profileId"
+            element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             }
           />
