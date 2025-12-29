@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { PlusCircle, Edit2, Trash2, Check, X } from 'lucide-react';
+import { PlusCircle, Edit2, Trash2, Check, X, Search } from 'lucide-react';
 import { api, APIError } from '../../utils/api';
 
 const CategoriesManager = ({ profileId }) => {
   const [categories, setCategories] = useState([]);
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [newCategory, setNewCategory] = useState({ name: '', type: 'expense', icon: '📁', color: '#6B7280' });
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
@@ -13,6 +15,7 @@ const CategoriesManager = ({ profileId }) => {
     try {
       const data = await api.getCategories(profileId);
       setCategories(data);
+      setFilteredCategories(data);
       setLoading(false);
     } catch (error) {
       if (!(error instanceof APIError && error.status === 401)) {
@@ -25,6 +28,17 @@ const CategoriesManager = ({ profileId }) => {
   useEffect(() => {
     loadCategories();
   }, [loadCategories]);
+
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      setFilteredCategories(categories.filter(cat => 
+        cat.name.toLowerCase().includes(query)
+      ));
+    } else {
+      setFilteredCategories(categories);
+    }
+  }, [searchQuery, categories]);
 
   const handleCreate = async () => {
     if (!newCategory.name.trim() || newCategory.name.length < 2) {
@@ -80,6 +94,18 @@ const CategoriesManager = ({ profileId }) => {
   return (
     <div>
       <h2 className="text-lg sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-4 sm:mb-6">Manage Categories</h2>
+      
+      {/* Search Bar */}
+      <div className="relative mb-4 sm:mb-6">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search categories..."
+          className="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 bg-white rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-800 text-xs sm:text-sm md:text-base"
+        />
+      </div>
       
       {/* Create New */}
       <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 mb-4 sm:mb-6 border-2 border-gray-200">
@@ -138,12 +164,14 @@ const CategoriesManager = ({ profileId }) => {
 
       {/* Categories List */}
       <div className="space-y-2 sm:space-y-3">
-        {categories.length === 0 ? (
+        {filteredCategories.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            <p className="text-sm sm:text-base">No categories yet. Create your first one above!</p>
+            <p className="text-sm sm:text-base">
+              {categories.length === 0 ? 'No categories yet. Create your first one above!' : 'No categories found matching your search.'}
+            </p>
           </div>
         ) : (
-          categories.map(category => (
+          filteredCategories.map(category => (
             <div
               key={category.id}
               className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border-2 border-gray-200 hover:border-gray-300 transition-all"

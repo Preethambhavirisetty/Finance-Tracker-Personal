@@ -21,6 +21,7 @@ help:
 	@echo "  make restore        Restore database from latest backup"
 	@echo "  make update         Pull latest code and rebuild"
 	@echo "  make monitor        Show real-time resource usage"
+	@echo "  make deploy-prod    Deploy in production mode"
 	@echo ""
 	@echo "Individual Service Commands:"
 	@echo "  make logs-backend   View backend logs"
@@ -150,6 +151,22 @@ deploy:
 	$(DOCKER_COMPOSE) up -d --build
 	@echo "Deployment complete!"
 	@echo "Check status with: make status"
+
+# Production deploy (with production override)
+deploy-prod:
+	@if [ ! -f .env ]; then \
+		echo "⚠️  .env file not found!"; \
+		echo "Creating from env.example..."; \
+		cp env.example .env; \
+		echo "⚠️  Please edit .env file with production settings before deploying!"; \
+		echo "See PRODUCTION.md for details."; \
+		exit 1; \
+	fi
+	@echo "🚀 Deploying to production..."
+	$(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+	@echo "✅ Production deployment complete!"
+	@echo "Check status with: make status"
+	@echo "View logs with: make logs"
 
 # Stop specific service
 stop-%:

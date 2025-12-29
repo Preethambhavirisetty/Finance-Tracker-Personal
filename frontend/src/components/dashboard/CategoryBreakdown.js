@@ -7,30 +7,38 @@ const CategoryBreakdown = ({ categoryBreakdown }) => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 shadow-2xl border-2 border-gray-200 mb-6 sm:mb-8">
-      <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
-        <PieChart className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-gray-700" />
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 tablet:p-5 laptop:p-6 desktop:p-8">
+      <h2 className="text-lg tablet:text-lg laptop:text-xl desktop:text-2xl font-medium text-gray-900 mb-4 tablet:mb-5 laptop:mb-6 desktop:mb-8 flex items-center gap-2">
+        <PieChart className="w-4 h-4 tablet:w-4 tablet:h-4 laptop:w-5 laptop:h-5 desktop:w-6 desktop:h-6 text-gray-600" />
         Category Breakdown
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 tablet:grid-cols-2 laptop:grid-cols-4 desktop:grid-cols-5 gap-4 tablet:gap-5 laptop:gap-6 desktop:gap-8">
         {Object.entries(categoryBreakdown).map(([category, amounts]) => (
           <div
             key={category}
-            className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 border-2 border-gray-200 hover:shadow-lg transition-all duration-300"
+            className="bg-[#F3F4F4] rounded-lg p-2 laptop:p-3 desktop:p-3 border border-gray-200 hover:shadow-sm transition-shadow"
           >
-            <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">{category}</h3>
-            {amounts.income > 0 && (
-              <p className="text-green-700 flex items-center gap-2 mb-1 font-semibold text-sm sm:text-base">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
-                ${amounts.income.toFixed(2)}
-              </p>
-            )}
-            {amounts.expense > 0 && (
-              <p className="text-red-700 flex items-center gap-2 font-semibold text-sm sm:text-base">
-                <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" />
-                ${amounts.expense.toFixed(2)}
-              </p>
-            )}
+            <h3 className="text-base tablet:text-lg laptop:text-xl desktop:text-2xl font-semibold capitalize text-gray-900 mb-3 laptop:mb-4">{category}</h3>
+            <div className="space-y-2">
+              {amounts.income > 0 && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-green-600" />
+                    <span className="text-sm text-gray-600">Income</span>
+                  </div>
+                  <span className="text-base font-semibold text-green-600">${amounts.income.toFixed(2)}</span>
+                </div>
+              )}
+              {amounts.expense > 0 && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingDown className="w-4 h-4 text-red-600" />
+                    <span className="text-sm text-gray-600">Expense</span>
+                  </div>
+                  <span className="text-base font-semibold text-red-600">${amounts.expense.toFixed(2)}</span>
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -39,4 +47,3 @@ const CategoryBreakdown = ({ categoryBreakdown }) => {
 };
 
 export default CategoryBreakdown;
-

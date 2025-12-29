@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { User, LogOut, PlusCircle, Settings as SettingsIcon } from 'lucide-react';
+import { User, LogOut, PlusCircle, Settings as SettingsIcon, Menu, ChevronDown } from 'lucide-react';
 import { api, APIError } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import StatsCards from './StatsCards';
@@ -17,19 +17,10 @@ const Dashboard = () => {
   const [currentProfile, setCurrentProfile] = useState(location.state?.profile || null);
   const [transactions, setTransactions] = useState([]);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    if (profileId) {
-      loadTransactions(profileId);
-      
-      // If profile not in state, fetch it
-      if (!currentProfile) {
-        loadProfile(profileId);
-      }
-    }
-  }, [profileId]);
-
-  const loadProfile = async (id) => {
+  const loadProfile = useCallback(async (id) => {
     try {
       const profiles = await api.getProfiles();
       const profile = profiles.find(p => p.id === parseInt(id));
@@ -42,9 +33,9 @@ const Dashboard = () => {
       console.error('Failed to load profile:', error);
       navigate('/profiles');
     }
-  };
+  }, [navigate]);
 
-  const loadTransactions = async (id) => {
+  const loadTransactions = useCallback(async (id) => {
     try {
       const data = await api.getTransactions(id);
       setTransactions(data);
@@ -53,7 +44,36 @@ const Dashboard = () => {
         console.error('Failed to load transactions:', error.message);
       }
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (profileId) {
+      loadTransactions(profileId);
+      
+      // If profile not in state, fetch it
+      if (!currentProfile) {
+        loadProfile(profileId);
+      }
+    }
+  }, [profileId, currentProfile, loadProfile, loadTransactions]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
+
 
   const handleTransactionAdded = (transaction) => {
     setTransactions([transaction, ...transactions]);
@@ -102,57 +122,82 @@ const Dashboard = () => {
 
   const stats = calculateStats();
   const categoryBreakdown = getCategoryBreakdown();
+  
+  // style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
 
   return (
-    <div className="min-h-screen bg-white p-3 sm:p-4 md:p-6 lg:p-8" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-gray-200 p-4 tablet:p-6 laptop:p-8 desktop:p-10">
+      <div className="max-w-7xl mx-auto space-y-5 tablet:space-y-6 laptop:space-y-7 desktop:space-y-8">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 sm:gap-4 mb-4 sm:mb-8 pb-3 sm:pb-6 border-b-2 border-gray-200">
-          <div className="flex-1">
-            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-1 sm:mb-2" style={{ letterSpacing: '0.02em' }}>
-              Finance Dashboard
-            </h1>
-            <p className="text-xs sm:text-lg md:text-xl text-gray-600 flex items-center gap-1.5 sm:gap-2 font-light italic">
-              <User className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-              {currentProfile?.name}
-            </p>
+        <header className="border-b border-gray-300 p-1 tablet:p-2 laptop:p-2 desktop:p-3">
+          <div className="flex flex-col laptop:flex-row desktop:flex-row justify-between items-start laptop:items-center desktop:items-center gap-4 laptop:gap-6 desktop:gap-8">
+            <div className="flex-1">
+              <h1 className="text-2xl tablet:text-xl laptop:text-2xl desktop:text-3xl font-bold text-gray-900 mb-2" style={{ letterSpacing: '0.02em' }}>
+                Finance Dashboard
+              </h1>
+              <p className="text-sm tablet:text-base laptop:text-lg desktop:text-xl text-gray-600 flex items-center gap-2 capitalize">
+                <User className="w-4 h-4 tablet:w-5 tablet:h-5 laptop:w-5 laptop:h-5 desktop:w-5 desktop:h-5" />
+                {currentProfile?.name}
+              </p>
+            </div>
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="px-4 tablet:px-5 laptop:px-6 desktop:px-5 py-2 tablet:py-2.5 laptop:py-3 desktop:py-4 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 text-sm tablet:text-base"
+              >
+                <Menu className="w-4 h-4 tablet:w-5 tablet:h-5" />
+                <ChevronDown className={`w-4 h-4 tablet:w-5 tablet:h-5 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-48 tablet:w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                  <button
+                    onClick={() => {
+                      navigate(`/settings/${profileId}`);
+                      setShowDropdown(false);
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm tablet:text-base text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                  >
+                    <SettingsIcon className="w-4 h-4 tablet:w-5 tablet:h-5 text-gray-600" />
+                    Settings
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/profiles');
+                      setShowDropdown(false);
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm tablet:text-base text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                  >
+                    <User className="w-4 h-4 tablet:w-5 tablet:h-5 text-gray-600" />
+                    Switch Profile
+                  </button>
+                  <div className="border-t border-gray-200 my-1"></div>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setShowDropdown(false);
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm tablet:text-base text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3"
+                  >
+                    <LogOut className="w-4 h-4 tablet:w-5 tablet:h-5" />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 w-full lg:w-auto">
-            <button
-              onClick={() => navigate(`/settings/${profileId}`)}
-              className="px-3 sm:px-5 md:px-6 py-1.5 sm:py-2.5 md:py-3 bg-blue-600 text-white rounded-lg sm:rounded-2xl font-semibold hover:bg-blue-700 transition-all duration-300 border-2 border-blue-600 flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-base"
-            >
-              <SettingsIcon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Settings</span>
-            </button>
-            <button
-              onClick={() => navigate('/profiles')}
-              className="px-3 sm:px-5 md:px-6 py-1.5 sm:py-2.5 md:py-3 bg-white text-gray-900 rounded-lg sm:rounded-2xl font-semibold hover:bg-gray-50 transition-all duration-300 border-2 border-gray-300 flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-base"
-            >
-              <User className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Switch Profile</span>
-              <span className="sm:hidden">Switch</span>
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-3 sm:px-5 md:px-6 py-1.5 sm:py-2.5 md:py-3 bg-gray-900 text-white rounded-lg sm:rounded-2xl font-semibold hover:bg-gray-800 transition-all duration-300 border-2 border-gray-900 flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg text-xs sm:text-base"
-            >
-              <LogOut className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-              Logout
-            </button>
-          </div>
-        </div>
+        </header>
 
         {/* Stats Cards */}
         <StatsCards stats={stats} />
 
         {/* Add Transaction Button */}
-        <div className="mb-3 sm:mb-6">
+        <div>
           <button
             onClick={() => setShowAddTransaction(!showAddTransaction)}
-            className="w-full md:w-auto px-4 sm:px-8 md:px-10 py-2.5 sm:py-4 md:py-5 bg-gray-900 text-white rounded-lg sm:rounded-2xl font-semibold hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-2xl flex items-center justify-center gap-2 sm:gap-3 text-sm sm:text-lg"
+            className="w-full laptop:w-auto desktop:w-auto px-5 tablet:px-6 laptop:px-7 desktop:px-8 py-2 tablet:py-2.5 laptop:py-3 desktop:py-3.5 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors shadow-sm hover:shadow-md flex items-center justify-center gap-2 text-base tablet:text-md laptop:text-md desktop:text-md"
           >
-            <PlusCircle className="w-4 h-4 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+            <PlusCircle className="w-5 h-5 tablet:w-6 tablet:h-6 laptop:w-6 laptop:h-6 desktop:w-5 desktop:h-5" />
             Add Transaction
           </button>
         </div>
@@ -180,4 +225,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
