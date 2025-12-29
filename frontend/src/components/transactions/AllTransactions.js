@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, Filter, X, Calendar, TrendingUp, TrendingDown, Trash2 } from 'lucide-react';
+import { ArrowLeft, Search, Filter, X, TrendingUp, TrendingDown, Trash2 } from 'lucide-react';
 import { api, APIError } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import TransactionDetailModal from '../dashboard/TransactionDetailModal';

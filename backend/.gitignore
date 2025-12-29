@@ -8,6 +8,9 @@ env/
 venv/
 ENV/
 .venv
+.env
+dev.env
+prod.env
 
 # Database
 *.db

@@ -11,6 +11,7 @@ ENV/
 *.egg-info/
 dist/
 build/
+migrations/
 
 # Database
 *.db
@@ -83,4 +84,5 @@ transactions_export.csv
 # Misc
 --yes
 
-/_others/
+_others/
+progress.checkpointing

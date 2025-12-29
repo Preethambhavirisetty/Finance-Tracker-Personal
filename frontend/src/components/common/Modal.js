@@ -16,7 +16,7 @@ const Modal = ({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl' }) => 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
@@ -24,20 +24,20 @@ const Modal = ({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl' }) => 
       />
       
       {/* Modal */}
-      <div className={`relative bg-white rounded-xl sm:rounded-2xl shadow-2xl ${maxWidth} w-full max-h-[90vh] overflow-y-auto`}>
+      <div className={`relative bg-white rounded-xl shadow-lg ${maxWidth} w-full max-h-[90vh] overflow-y-auto`}>
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b-2 border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between rounded-t-xl sm:rounded-t-2xl z-10">
-          <h2 className="text-base sm:text-xl md:text-2xl font-bold text-gray-900">{title}</h2>
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-4 tablet:px-6 py-4 flex items-center justify-between rounded-t-xl z-10">
+          <h2 className="text-lg tablet:text-xl laptop:text-2xl font-semibold text-gray-900">{title}</h2>
           <button
             onClick={onClose}
-            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+            <X className="w-5 h-5 text-gray-600" />
           </button>
         </div>
         
         {/* Content */}
-        <div className="px-4 sm:px-6 py-4 sm:py-6">
+        <div className="px-4 tablet:px-6 py-4 tablet:py-6">
           {children}
         </div>
       </div>
@@ -46,4 +46,3 @@ const Modal = ({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl' }) => 
 };
 
 export default Modal;
-

@@ -1,40 +1,56 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 
+const StatCard = ({ title, value, subtitle, icon: Icon, iconBgColor, iconColor, valueColor = 'text-gray-900', colSpan = '' }) => {
+  return (
+    <div className={`bg-white rounded-xl shadow-sm border border-gray-200 p-3 tablet:p-4 laptop:p-4 desktop:p-5 transition-shadow ${colSpan}`}>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm tablet:text-base laptop:text-lg desktop:text-xl font-medium text-gray-700">{title}</h3>
+        <div className={`p-1.5 tablet:p-2 laptop:p-2 desktop:p-3 ${iconBgColor} rounded-lg`}>
+          <Icon className={`w-4 h-4 tablet:w-5 tablet:h-5 laptop:w-5 laptop:h-5 desktop:w-6 desktop:h-6 ${iconColor}`} />
+        </div>
+      </div>
+      <p className={`text-xl tablet:text-2xl laptop:text-3xl desktop:text-5xl font-light mb-1 ${valueColor}`}>
+        ${value.toFixed(2)}
+      </p>
+      <p className="text-xs tablet:text-sm laptop:text-base desktop:text-lg text-gray-500 font-light">{subtitle}</p>
+    </div>
+  );
+};
+
 const StatsCards = ({ stats }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6 mb-4 sm:mb-8">
-      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 shadow-xl border-2 border-green-200 hover:shadow-2xl transition-all duration-300">
-        <div className="flex items-center justify-between mb-2 sm:mb-4">
-          <h3 className="text-xs sm:text-lg md:text-xl font-semibold text-gray-900">Income</h3>
-          <TrendingUp className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-green-600" />
-        </div>
-        <p className="text-2xl sm:text-4xl md:text-5xl font-bold text-green-700">${stats.income.toFixed(2)}</p>
-        <p className="text-[10px] sm:text-sm text-gray-600 mt-0.5 sm:mt-2 font-light italic">Earnings</p>
-      </div>
-
-      <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 shadow-xl border-2 border-red-200 hover:shadow-2xl transition-all duration-300">
-        <div className="flex items-center justify-between mb-2 sm:mb-4">
-          <h3 className="text-xs sm:text-lg md:text-xl font-semibold text-gray-900">Expenses</h3>
-          <TrendingDown className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-red-600" />
-        </div>
-        <p className="text-2xl sm:text-4xl md:text-5xl font-bold text-red-700">${stats.expenses.toFixed(2)}</p>
-        <p className="text-[10px] sm:text-sm text-gray-600 mt-0.5 sm:mt-2 font-light italic">Spending</p>
-      </div>
-
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 shadow-xl border-2 border-blue-200 hover:shadow-2xl transition-all duration-300 sm:col-span-2 lg:col-span-1">
-        <div className="flex items-center justify-between mb-2 sm:mb-4">
-          <h3 className="text-xs sm:text-lg md:text-xl font-semibold text-gray-900">Balance</h3>
-          <Wallet className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-blue-600" />
-        </div>
-        <p className={`text-2xl sm:text-4xl md:text-5xl font-bold ${stats.balance >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
-          ${stats.balance.toFixed(2)}
-        </p>
-        <p className="text-[10px] sm:text-sm text-gray-600 mt-0.5 sm:mt-2 font-light italic">Net</p>
-      </div>
+    <div className="grid grid-cols-1 tablet:grid-cols-2 laptop:grid-cols-3 desktop:grid-cols-3 gap-4 tablet:gap-5 laptop:gap-6 desktop:gap-8">
+      <StatCard
+        title="Income"
+        value={stats.income}
+        subtitle="Total earnings"
+        icon={TrendingUp}
+        iconBgColor="bg-green-100"
+        iconColor="text-green-600"
+      />
+      
+      <StatCard
+        title="Expenses"
+        value={stats.expenses}
+        subtitle="Total spending"
+        icon={TrendingDown}
+        iconBgColor="bg-red-100"
+        iconColor="text-red-600"
+      />
+      
+      <StatCard
+        title="Balance"
+        value={stats.balance}
+        subtitle="Net balance"
+        icon={Wallet}
+        iconBgColor="bg-blue-100"
+        iconColor="text-blue-600"
+        valueColor={stats.balance >= 0 ? 'text-green-600' : 'text-red-600'}
+        colSpan="tablet:col-span-2 laptop:col-span-1 desktop:col-span-1"
+      />
     </div>
   );
 };
 
 export default StatsCards;
-

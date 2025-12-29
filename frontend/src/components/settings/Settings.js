@@ -33,7 +33,7 @@ const Settings = () => {
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900" style={{ letterSpacing: '0.02em' }}>
               Settings
             </h1>
-            <p className="text-xs sm:text-lg md:text-xl text-gray-600 font-light italic">
+            <p className="text-xs sm:text-lg md:text-xl text-gray-600 font-light ">
               Manage your finance settings
             </p>
           </div>
